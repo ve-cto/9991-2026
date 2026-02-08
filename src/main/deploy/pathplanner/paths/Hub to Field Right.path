@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.2417215938585966,
-        "y": 5.177791736394298
+        "x": 3.223899821109123,
+        "y": 2.4854740608228973
       },
       "isLocked": false,
       "linkedName": "Front of Hub"
     },
     {
       "anchor": {
-        "x": 2.908459677419355,
-        "y": 7.348475806451614
+        "x": 3.256350626118068,
+        "y": 0.7006797853309479
       },
       "prevControl": {
-        "x": 2.908459677417948,
-        "y": 6.968120967741935
+        "x": 3.272576028622539,
+        "y": 1.0251878354203927
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Field Left",
+  "folder": "Field Right Specific",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

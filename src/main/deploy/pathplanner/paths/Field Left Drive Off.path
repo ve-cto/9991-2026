@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.735000000001407,
+        "x": 3.8080143112701252,
         "y": 7.304588709678757
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9304032258064523,
-        "y": 7.282645161290322
+        "x": 3.0034175370751703,
+        "y": 7.282645161290323
       },
       "isLocked": false,
       "linkedName": "Field Left Start"
@@ -45,10 +45,10 @@
     "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Field Left",
+  "folder": "Field Left Specific",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -89.42994128648178
   },
   "useDefaultConstraints": true
 }

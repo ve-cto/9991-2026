@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Field Left Drive Off"
+            "pathName": "TOUR"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Field Left Specific",
+  "folder": "Debug",
   "choreoAuto": false
 }

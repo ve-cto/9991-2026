@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Field Left to Hub"
+            "pathName": "Field Right to Hub"
           }
         },
         {
@@ -101,13 +101,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Hub to Field Left"
+            "pathName": "Hub to Field Right"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Field Left Specific",
+  "folder": "Field Right Specific",
   "choreoAuto": false
 }

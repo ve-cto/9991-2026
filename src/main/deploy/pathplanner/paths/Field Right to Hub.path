@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.256350626118068,
-        "y": 3.9782110912343462
+        "x": 3.856690518783542,
+        "y": 0.5871019677996412
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5138090335171073,
-        "y": 3.7866669981830974
+        "x": 2.3477280858676206,
+        "y": 0.5384257602862248
       },
       "isLocked": false,
-      "linkedName": "Front of Hub"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.3431532258064522,
-        "y": 5.856314516129032
+        "x": 3.337477638640429,
+        "y": 4.043112701252236
       },
       "prevControl": {
-        "x": 1.9015067050023364,
-        "y": 5.453172408099918
+        "x": 2.834490161001789,
+        "y": 2.3232200357781743
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Outside Alliance Fuel"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -179.36340642403653
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Other",
+  "folder": "Field Right Specific",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

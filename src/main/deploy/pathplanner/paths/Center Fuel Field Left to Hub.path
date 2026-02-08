@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.8080143112701252,
-        "y": 7.304588709678757
+        "x": 7.523631484794276,
+        "y": 5.308694096601073
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.922957859657223,
-        "y": 7.619112903227146
+        "x": 6.0308944543828265,
+        "y": 5.2437924865831835
       },
       "isLocked": false,
-      "linkedName": "Field Left Start"
+      "linkedName": "Inside Center Fuel Field Left"
     },
     {
       "anchor": {
-        "x": 3.120580645162698,
-        "y": 6.090379032259404
+        "x": 5.7875134168157425,
+        "y": 7.239516994633274
       },
       "prevControl": {
-        "x": 3.090767142314312,
-        "y": 6.5631360059980945
+        "x": 6.742370193146524,
+        "y": 6.94245044199703
       },
       "nextControl": {
-        "x": 3.1717822580659236,
-        "y": 5.278467741936822
+        "x": 5.05737030411449,
+        "y": 7.466672629695886
       },
       "isLocked": false,
       "linkedName": null
@@ -33,18 +33,39 @@
     {
       "anchor": {
         "x": 3.256350626118068,
-        "y": 3.9782110912343462
+        "y": 7.239516994633274
       },
       "prevControl": {
-        "x": 3.1427728085867623,
-        "y": 4.85438282647585
+        "x": 4.424579606440071,
+        "y": 7.4828980322003575
+      },
+      "nextControl": {
+        "x": 2.3533144246299718,
+        "y": 7.0513844526565865
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.256350626118068,
+        "y": 4.010661896243291
+      },
+      "prevControl": {
+        "x": 3.223899821109123,
+        "y": 4.5298747763864045
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Front of Hub"
+      "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -64,7 +85,7 @@
   "folder": "Field Left Specific",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -89.42994128648178
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

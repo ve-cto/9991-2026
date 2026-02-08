@@ -3,12 +3,16 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Field Left",
-    "Field Right"
+    "Debug",
+    "Field Left Specific",
+    "Field Right Specific",
+    "Other"
   ],
   "autoFolders": [
-    "Field Left",
-    "Field Right"
+    "Debug",
+    "Field Left Specific",
+    "Field Right Specific",
+    "Other"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,

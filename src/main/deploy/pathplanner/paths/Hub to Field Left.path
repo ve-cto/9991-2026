@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5138090335171073,
-        "y": 3.7866669981830974
+        "x": 3.2417215938585966,
+        "y": 5.177791736394298
       },
       "isLocked": false,
       "linkedName": "Front of Hub"
     },
     {
       "anchor": {
-        "x": 1.3431532258064522,
-        "y": 5.856314516129032
+        "x": 2.908459677419355,
+        "y": 7.348475806451614
       },
       "prevControl": {
-        "x": 1.9015067050023364,
-        "y": 5.453172408099918
+        "x": 2.908459677417948,
+        "y": 6.968120967741935
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Outside Alliance Fuel"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -179.36340642403653
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Other",
+  "folder": "Field Left Specific",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

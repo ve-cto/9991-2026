@@ -36,7 +36,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Hub to Alliance Fuel"
+                  "pathName": "Hub to Center via Field Left"
                 }
               },
               {
@@ -55,7 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Collect Alliance Fuel"
+                  "pathName": "Collect Center Fuel Field Left"
                 }
               },
               {
@@ -76,7 +76,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Alliance Fuel to Hub"
+            "pathName": "Center Fuel Field Left to Hub"
           }
         },
         {
