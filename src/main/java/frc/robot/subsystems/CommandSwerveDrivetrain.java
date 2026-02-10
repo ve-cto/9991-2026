@@ -362,6 +362,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final PIDController poseForwardPidController = new PIDController(1, 0, 0);
     private final PIDController poseStrafePidController = new PIDController(1, 0, 0);
     private final PIDController poseRotationPidController = new PIDController(0.1, 0, 0);
+    private final PIDController pointRotationPidController = new PIDController(0.5, 0, 0);
 
     /*
      * Drives in a straight trajectory from the current pose to a target pose.
@@ -450,17 +451,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         );
     }
 
-    public void pointToPose(Pose2d pose, double velX, double velY, Vision vision) {
-        Pose2d currentPose = vision.getNetworkPose();
+    public void pointToPose(Pose2d pose, double velX, double velY, NetworkTablesIO table) {
+        Pose2d currentPose = table.getNetworkPose();
+        
+        double currentX = currentPose.getX();
+        double currentY = currentPose.getY();
+        
         Pose2d targetPose = pose;
+        double targetX = targetPose.getX();
+        double targetY = targetPose.getY();
 
-        double diff = targetPose.getRotation().getRadians() - currentPose.getRotation().getRadians();
-        double calc;
-        Rotation2d rotError = targetPose.getRotation().minus(currentPose.getRotation());
-        double angleError = rotError.getRadians(); // already normalized to [-pi, pi]
-        // Use controller with measurement=0 and setpoint=angleError so the
-        // controller output is proportional to the angular error.
-        calc = poseRotationPidController.calculate(0.0, angleError);
+        double targetXRelative = targetX - currentX;
+        double targetYRelative = targetY - currentY;
+
+        double theta = Math.atan2(targetYRelative, targetXRelative) + Math.PI;
+        Rotation2d targetRotation2d = new Rotation2d(theta);
+
+        // Rotation2d targetRotation2d = Math.sqrt(targetPose.getX() * targetPose.getX() + targetPose.getY() * targetPose.getY()) > 0.01 ? new Rotation2d(targetPose.getY(), targetPose.getX()) : currentPose.getRotation();
+    
+        Rotation2d rotError = targetRotation2d.minus(currentPose.getRotation());
+        double angleError = rotError.getRadians();
+
+        double calc = pointRotationPidController.calculate(0.0, angleError);
 
         double minmax = Math.max(-1, Math.min(1, calc));
 

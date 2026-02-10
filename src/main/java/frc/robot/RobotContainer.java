@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.path.PointTowardsZone;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,6 +28,8 @@ import frc.robot.Constants;
 import frc.robot.commands.DriveToApriltag;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.ExtendIntake;
+import frc.robot.commands.PointToHub;
+import frc.robot.commands.PointToPose;
 import frc.robot.commands.RetractIntake;
 import frc.robot.commands.RunIntake;
 import frc.robot.commands.UpdatePose;
@@ -142,8 +145,11 @@ public class RobotContainer {
             new DriveToApriltag(5, drivetrain, vision)
         );
         driveJoystick.cross().whileTrue(
-            new DriveToApriltag(17, drivetrain, vision)
+            // Blue hub (4.65, 4)
+            // Red hub (12, 4)
+            new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, networkTablesIO) 
         );
+
         driveJoystick.square().whileTrue(
             new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, networkTablesIO)
         );
