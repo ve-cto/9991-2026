@@ -55,6 +55,7 @@ public class Vision extends SubsystemBase {
     public static final Transform3d kRobotToCamBeta = new Transform3d(new Translation3d(-2.0, 0.0, 3.0), new Rotation3d(0, 0.84, 0)); // -1.5708 radians = 90 degrees
 
     private final CommandSwerveDrivetrain m_drivetrain;
+    private final NetworkTablesIO m_networkTablesIO;
 
     private final VisionSystemSim visionSim = new VisionSystemSim("sim");
     private final TargetModel targetModel = TargetModel.kAprilTag36h11;
@@ -69,8 +70,10 @@ public class Vision extends SubsystemBase {
     double[] diff = networkPose;
     Pose2d drivetrainPose = new Pose2d();
 
-    public Vision(CommandSwerveDrivetrain drivetrain) {
+    public Vision(CommandSwerveDrivetrain drivetrain, NetworkTablesIO networkTablesIO) {
         m_drivetrain = drivetrain;
+        m_networkTablesIO = networkTablesIO;
+
         poseEstimator = new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCamAlpha);
                 
         // only set up sim cameras if we're in sim
@@ -113,6 +116,8 @@ public class Vision extends SubsystemBase {
             
         //     }
         // }
+        this.networkPose = m_networkTablesIO.getNetworkPoseArray();
+        this.drivetrainPose = m_networkTablesIO.getNetworkPose();
     }
 
     @Override
@@ -123,11 +128,6 @@ public class Vision extends SubsystemBase {
             return;
         }
 
-        this.networkPose = poseSubscriber.get();
-        Translation2d translation = new Translation2d(networkPose[0], networkPose[1]);
-        Rotation2d rotation = new Rotation2d(networkPose[2] * (Math.PI / 180));
-
-        this.drivetrainPose = new Pose2d(translation, rotation);
         visionSim.update(this.drivetrainPose);
         this.diff = this.networkPose;
         m_lastVisionSimUpdate = now;
@@ -140,8 +140,7 @@ public class Vision extends SubsystemBase {
     public void addVisionMeasurement() {
         // only run if we aren't simulating
         if (RobotBase.isReal()) {
-            Pose2d drivetrainPose = m_drivetrain.getPose(); 
-            poseEstimator.setReferencePose(drivetrainPose);
+            poseEstimator.setReferencePose(this.drivetrainPose);
             
             for (var result : this.cameraAlpha.getAllUnreadResults()) {
                 poseEstimate = poseEstimator.estimateCoprocMultiTagPose(result);
@@ -232,13 +231,13 @@ public class Vision extends SubsystemBase {
         return new double[] {roll, pitch, yaw};
     }
 
-    public void driveToPoseHelper(int targetID, CommandSwerveDrivetrain commandSwerveDrivetrain) {
+    public void driveToApriltagHelper(int targetID, CommandSwerveDrivetrain commandSwerveDrivetrain) {
         var targetPose3d = getTargetPose(targetID);
         if (targetPose3d == null) {
             // Target not present in field layout (or not available) - do nothing.
             // Avoid throwing a NullPointerException when callers assume a pose exists.
             return;
         }
-        commandSwerveDrivetrain.driveToPose(targetPose3d.toPose2d(), Vision.this);
+        commandSwerveDrivetrain.driveToPose(targetPose3d.toPose2d(), this.m_networkTablesIO);
     }
 }

@@ -368,8 +368,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * 
      * @param pose The desired pose to drive to
      */
-    public void driveToPose(Pose2d pose, Vision vision) {
-        Pose2d currentPose = vision.getNetworkPose();
+    public void driveToPose(Pose2d pose, NetworkTablesIO table) {
+        Pose2d currentPose = table.getNetworkPose();
         Pose2d targetPose = pose;
 
         double[] diff = {
@@ -419,25 +419,52 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Scale the normalized [-1, 1] outputs by the drivetrain max speeds
         // so they are in the same units as teleop joystick inputs and to
         // exceed the configured deadband where appropriate.
+
+        // If we're on blue we need to flip these.
+        if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
+            map[0] = -map[0];
+            map[1] = -map[1];
+        }
         double velX = -map[0] * MaxSpeed;
-        // Invert Y sign to match the drivetrain's coordinate convention so a
-        // positive positional error in Y moves the robot toward the target.
         double velY = -map[1] * MaxSpeed;
         double rot = -map[2] * MaxAngularRate;
 
         // Log small debug info to help diagnose alignment behavior.
         try {
-            String msg = String.format("driveToPose diff=(%.3f, %.3f, %.3f) calc=(%.3f, %.3f, %.3f) vel=(%.3f, %.3f, %.3f)",
-                diff[0], diff[1], diff[2], calc[0], calc[1], calc[2], velX, velY, rot);
+            // String msg = String.format("driveToPose diff=(%.3f, %.3f, %.3f) calc=(%.3f, %.3f, %.3f) vel=(%.3f, %.3f, %.3f)",
+                // diff[0], diff[1], diff[2], calc[0], calc[1], calc[2], velX, velY, rot);
             // DriverStation warning (should appear in DS), plus console and dashboard as fallback
             // DriverStation.reportWarning(msg, false);
-            System.out.println(msg);
+            // System.out.println(msg);
             SmartDashboard.putNumber("driveToPose_velX", velX);
             SmartDashboard.putNumber("driveToPose_velY", velY);
             SmartDashboard.putNumber("driveToPose_rot", rot);
         } catch (Exception ignore) {
             // Never crash on logging
         }
+
+        this.setControl(
+            drive.withVelocityX(velX)
+                .withVelocityY(velY)
+                .withRotationalRate(rot)
+        );
+    }
+
+    public void pointToPose(Pose2d pose, double velX, double velY, Vision vision) {
+        Pose2d currentPose = vision.getNetworkPose();
+        Pose2d targetPose = pose;
+
+        double diff = targetPose.getRotation().getRadians() - currentPose.getRotation().getRadians();
+        double calc;
+        Rotation2d rotError = targetPose.getRotation().minus(currentPose.getRotation());
+        double angleError = rotError.getRadians(); // already normalized to [-pi, pi]
+        // Use controller with measurement=0 and setpoint=angleError so the
+        // controller output is proportional to the angular error.
+        calc = poseRotationPidController.calculate(0.0, angleError);
+
+        double minmax = Math.max(-1, Math.min(1, calc));
+
+        double rot = -minmax * MaxAngularRate;
 
         this.setControl(
             drive.withVelocityX(velX)

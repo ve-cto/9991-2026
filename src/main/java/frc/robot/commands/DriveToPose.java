@@ -1,47 +1,38 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.NetworkTablesIO;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class DriveToPose extends Command {
-  Vision vision;
-  CommandSwerveDrivetrain commandSwerveDrivetrain;
-  private final int targetID = 4;
+    private final CommandSwerveDrivetrain m_drivetrain;
+    private Pose2d m_targetPose;
+    private final NetworkTablesIO m_networkTablesIO;
 
-  /** Creates a new DriveToPose. */
-  public DriveToPose(CommandSwerveDrivetrain commandSwerveDrivetrain, Vision vision) {
-    this.vision = vision;
-    this.commandSwerveDrivetrain = commandSwerveDrivetrain;
-    // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(commandSwerveDrivetrain);
-  }
+    public DriveToPose(Pose2d targetPose, CommandSwerveDrivetrain drivetrain, NetworkTablesIO networkTablesIO) {
+        this.m_drivetrain = drivetrain;
+        this.m_targetPose = targetPose;
+        this.m_networkTablesIO = networkTablesIO;
+        addRequirements(drivetrain);
+    }   
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {}
+    @Override
+    public void initialize() {
+    }
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    vision.driveToPoseHelper(targetID, this.commandSwerveDrivetrain);
-  }
+    @Override
+    public void execute() {
+        m_drivetrain.driveToPose(m_targetPose, m_networkTablesIO);
+    }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {}
+    @Override
+    public void end(boolean interrupted) {
+    }
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    // End the command if the desired target is not defined in the field layout
-    // or is not currently visible. This prevents the command from holding the
-    // drivetrain requirement while doing nothing.
-    return vision.getTargetPose(targetID) == null;
-  }
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+
 }

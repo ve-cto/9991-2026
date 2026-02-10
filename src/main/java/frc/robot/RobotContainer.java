@@ -13,6 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,12 +24,14 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants;
+import frc.robot.commands.DriveToApriltag;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.ExtendIntake;
 import frc.robot.commands.RetractIntake;
 import frc.robot.commands.RunIntake;
 import frc.robot.commands.UpdatePose;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.NetworkTablesIO;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
@@ -51,7 +54,8 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    public final Vision vision = new Vision(drivetrain);
+    public final NetworkTablesIO networkTablesIO = new NetworkTablesIO();
+    public final Vision vision = new Vision(drivetrain, networkTablesIO);
     // #endregion Swerve setup
 
     // private final CommandXboxController driveJoystick = new CommandXboxController(Constants.Controller.kDriverControllerPort);
@@ -100,7 +104,7 @@ public class RobotContainer {
         // driveJoystick.triangle().whileTrue(drivetrain.applyRequest(() ->
         //     point.withModuleDirection(new Rotation2d(-driveJoystick.getLeftY(), -driveJoystick.getLeftX()))
         // ));
-
+ 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
         // driveJoystick.back().and(driveJoystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
@@ -127,15 +131,21 @@ public class RobotContainer {
         //     new RunIntake(m_intake, Constants.Intake.kIntakeReverseSpeed)
         // );
 
-        driveJoystick.cross().whileTrue(
-            new RunIntake(m_intake, Constants.Intake.kIntakeForwardSpeed)
-        );
+        // driveJoystick.cross().whileTrue(
+        //     new RunIntake(m_intake, Constants.Intake.kIntakeForwardSpeed)
+        // );
 
         // driveJoystick.circle().whileTrue(
         //     new RunIntake(m_intake, Constants.Intake.kIntakeReverseSpeed)
         // );
         driveJoystick.circle().whileTrue(
-            new DriveToPose(drivetrain, vision)
+            new DriveToApriltag(5, drivetrain, vision)
+        );
+        driveJoystick.cross().whileTrue(
+            new DriveToApriltag(17, drivetrain, vision)
+        );
+        driveJoystick.square().whileTrue(
+            new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, networkTablesIO)
         );
 
         driveJoystick.povDown().whileTrue(
