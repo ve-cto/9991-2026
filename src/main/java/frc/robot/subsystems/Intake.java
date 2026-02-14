@@ -34,7 +34,7 @@ public class Intake extends SubsystemBase {
         armPositionDebounced = armPositionHistory.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
     }
 
-    /* Return the current arm position (debounced) */
+    /* Return the current arm position (debounced over 3 values) */
     public double getArmPositionDebounced() {
         return armPositionDebounced;
     }

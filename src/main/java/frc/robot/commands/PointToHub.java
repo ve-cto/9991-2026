@@ -26,17 +26,23 @@ public class PointToHub extends Command {
         this.m_velX = velX;
         this.m_velY = velY;
         this.m_networkTablesIO = networkTablesIO;
-        if (DriverStation.getAlliance().toString() == "Blue1" || DriverStation.getAlliance().toString() == "Blue2" || DriverStation.getAlliance().toString() == "Blue3") {
-            this.m_targetPose = blueHubPose;
-        } else {
-            System.out.println(DriverStation.getAlliance().toString());
-            this.m_targetPose = redHubPose;
-        }
+        
+        // if (DriverStation.getAlliance().toString() == "Blue1" || DriverStation.getAlliance().toString() == "Blue2" || DriverStation.getAlliance().toString() == "Blue3") {
+        //     this.m_targetPose = blueHubPose;
+        // } else {
+        //     System.out.println(DriverStation.getAlliance().toString());
+        //     this.m_targetPose = redHubPose;
+        // }
         addRequirements(drivetrain);
     }   
 
     @Override
     public void initialize() {
+        if (this.m_networkTablesIO.getAlliance()) {
+            this.m_targetPose = redHubPose;
+        } else {
+            this.m_targetPose = blueHubPose;
+        }
     }
 
     @Override
@@ -52,5 +58,4 @@ public class PointToHub extends Command {
     public boolean isFinished() {
         return false;
     }
-
 }

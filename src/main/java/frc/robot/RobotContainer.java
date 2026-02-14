@@ -31,6 +31,7 @@ import frc.robot.commands.ExtendIntake;
 import frc.robot.commands.PointToHub;
 import frc.robot.commands.PointToPose;
 import frc.robot.commands.RetractIntake;
+import frc.robot.commands.RunDebugMotors;
 import frc.robot.commands.RunIntake;
 import frc.robot.commands.UpdatePose;
 import frc.robot.subsystems.Intake;
@@ -40,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.DebugMotors;
 import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
@@ -68,7 +70,7 @@ public class RobotContainer {
     private final CommandPS4Controller operatorJoystick = new CommandPS4Controller(Constants.Controller.kOperatorControllerPort);
     
     private final Intake m_intake = new Intake();
-    // NOTE: don't create a second Vision instance — use the single `vision` above.
+    private final DebugMotors m_DebugMotors = new DebugMotors();
 
     private final SendableChooser<Command> autoChooser;
 
@@ -126,14 +128,6 @@ public class RobotContainer {
         // );
 
         // #region Intake
-        // driveJoystick.x().whileTrue(
-        //     new RunIntake(m_intake, Constants.Intake.kIntakeForwardSpeed)
-        // );
-
-        // driveJoystick.b().whileTrue(
-        //     new RunIntake(m_intake, Constants.Intake.kIntakeReverseSpeed)
-        // );
-
         // driveJoystick.cross().whileTrue(
         //     new RunIntake(m_intake, Constants.Intake.kIntakeForwardSpeed)
         // );
@@ -141,28 +135,43 @@ public class RobotContainer {
         // driveJoystick.circle().whileTrue(
         //     new RunIntake(m_intake, Constants.Intake.kIntakeReverseSpeed)
         // );
-        driveJoystick.circle().whileTrue(
-            new DriveToApriltag(5, drivetrain, vision)
-        );
-        driveJoystick.cross().whileTrue(
-            // Blue hub (4.65, 4)
-            // Red hub (12, 4)
-            new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, networkTablesIO) 
-        );
 
-        driveJoystick.square().whileTrue(
-            new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, networkTablesIO)
-        );
+        // driveJoystick.povDown().whileTrue(
+        //     new ExtendIntake(m_intake)
+        // );
 
-        driveJoystick.povDown().whileTrue(
-            new ExtendIntake(m_intake)
-        );
-
-        driveJoystick.povUp().whileTrue(
-            new RetractIntake(m_intake)
-        );
+        // driveJoystick.povUp().whileTrue(
+        //     new RetractIntake(m_intake)
+        // );
         // #endregion Intake
 
+        // #region Poses
+        // driveJoystick.circle().whileTrue(
+        //     new DriveToApriltag(5, drivetrain, vision)
+        // );
+        // driveJoystick.cross().whileTrue(
+        //     // Blue hub (4.65, 4)
+        //     // Red hub (12, 4)
+        //     new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, networkTablesIO) 
+        // );
+
+        // driveJoystick.square().whileTrue(
+        //     new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, networkTablesIO)
+        // );
+        // #endregion Poses
+        
+        // #region DebugMotors
+        driveJoystick.povUp().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(1, 0.5, m_DebugMotors));
+        driveJoystick.povRight().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(2, 0.5, m_DebugMotors));
+        driveJoystick.povDown().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(3, 0.5, m_DebugMotors));
+        driveJoystick.povLeft().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(4, 0.5, m_DebugMotors));
+
+        driveJoystick.povUp().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(1, -0.5, m_DebugMotors));
+        driveJoystick.povRight().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(2, -0.5, m_DebugMotors));
+        driveJoystick.povDown().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(3, -0.5, m_DebugMotors));
+        driveJoystick.povLeft().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(4, -0.5, m_DebugMotors));
+        // #endregion DebugMotors
+        
         drivetrain.registerTelemetry(logger::telemeterize);
     }
     

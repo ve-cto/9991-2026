@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -16,10 +17,13 @@ public class NetworkTablesIO extends SubsystemBase {
   Pose2d drivetrainPose = new Pose2d();
 
   double[] networkPose = new double[] {0.0, 0.0, 0.0};
+  private boolean isRedAlliance = true;
 
   NetworkTableInstance ntInst = NetworkTableInstance.getDefault();
-  NetworkTable table = ntInst.getTable("Pose");
-  DoubleArraySubscriber poseSubscriber = table.getDoubleArrayTopic("robotPose").subscribe(new double[] {0.0, 0.0, 0.0});
+  NetworkTable fmsTable = ntInst.getTable("FMSInfo");
+  NetworkTable drivetrainTable = ntInst.getTable("Pose");
+  DoubleArraySubscriber poseSubscriber = drivetrainTable.getDoubleArrayTopic("robotPose").subscribe(new double[] {0.0, 0.0, 0.0});
+  BooleanSubscriber allianceSubscriber = fmsTable.getBooleanTopic("IsRedAlliance").subscribe(isRedAlliance);
 
   /** Creates a new NetworkTablesIO. */
   public NetworkTablesIO() {}
@@ -31,6 +35,8 @@ public class NetworkTablesIO extends SubsystemBase {
     Translation2d translation = new Translation2d(networkPose[0], networkPose[1]);
     Rotation2d rotation = new Rotation2d(networkPose[2] * (Math.PI / 180));
     this.drivetrainPose = new Pose2d(translation, rotation);
+    
+    this.isRedAlliance = allianceSubscriber.get();
   }
 
   public Pose2d getNetworkPose() {
@@ -39,5 +45,9 @@ public class NetworkTablesIO extends SubsystemBase {
 
   public double[] getNetworkPoseArray() {
     return this.networkPose;
+  }
+
+  public boolean getAlliance() {
+    return this.isRedAlliance;
   }
 }
