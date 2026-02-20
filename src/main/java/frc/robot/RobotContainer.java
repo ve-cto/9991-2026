@@ -113,7 +113,7 @@ public class RobotContainer {
 
         // Brake while holding the button. When the robot brakes, the four drive motors stop and the modules point towards the center of the robot. While breaking, the robot cannot drive.
         // driveJoystick.rightBumper().whileTrue(drivetrain.applyRequest(() -> brake));
-        driveJoystick.R1().whileTrue(drivetrain.applyRequest(() -> brake));
+        // driveJoystick.R1().whileTrue(drivetrain.applyRequest(() -> brake));
         
         // Point the modules towards the direction of the left stick, without driving the robot. Note that this does not get updated while holding, only on initialize. (They aren't double suppliers)
         // driveJoystick.triangle().whileTrue(drivetrain.applyRequest(() ->
@@ -129,7 +129,7 @@ public class RobotContainer {
 
         // Reset the field-centric heading on button press. Note that this has limited effect during the actual game, as m_vision measurements will override it.
         // driveJoystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        driveJoystick.L1().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        driveJoystick.R1().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         // #endregion Swerve
 
         // #region LEDs
@@ -177,9 +177,9 @@ public class RobotContainer {
                 .alongWith(m_led.displayTargeted(() -> drivetrain.getAligned()))
         );
 
-        driveJoystick.square().whileTrue(
-            new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, m_networkTablesIO)
-        );
+        // driveJoystick.square().whileTrue(
+        //     new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, m_networkTablesIO)
+        // );
         // #endregion Poses
         
         // #region Vision
@@ -199,7 +199,7 @@ public class RobotContainer {
         
         driveJoystick.povUp().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(1, 0.5, m_DebugMotors));
         driveJoystick.povRight().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(2, 0.5, m_DebugMotors));
-        driveJoystick.povDown().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(3, 0.5, m_DebugMotors));
+        driveJoystick.povDown().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(3, 1.0, m_DebugMotors));
         driveJoystick.povLeft().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(4, 0.5, m_DebugMotors));
 
         driveJoystick.povUp().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(1, -0.5, m_DebugMotors));

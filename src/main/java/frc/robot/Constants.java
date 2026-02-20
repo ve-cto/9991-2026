@@ -11,8 +11,8 @@ public final class Constants {
         // Swerve takes up the CAN network up to value 12, thus, all motors must be assigned ID's of 13 or higher.
         public static final int kIntakerId = 99; // ludicrously high value as we aren't using this subsystem yet
         public static final int kArmId = 99;
-        public static final int kArmEncoderAChannel = 0;
-        public static final int kArmEncoderBChannel = 1;
+        public static final int kArmEncoderAChannel = 2;
+        public static final int kArmEncoderBChannel = 3;
     
         public static final int kDebugMotor1 = 15;
         public static final int kDebugMotor2 = 16;
@@ -48,7 +48,7 @@ public final class Constants {
 
     public static class Led {
         public static final int l_ledID = 0; // PWM port
-        public static final int kLedLength = 20;
+        public static final int kLedLength = 101;
         
         public static enum StatusList {
             DISCONNECT,
