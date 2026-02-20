@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.intake;
 
 import java.util.Set;
 
@@ -6,10 +6,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.subsystems.Intake;
 
-public class ExtendIntake extends Command {
+public class RetractIntake extends Command {
     private final Intake m_intake;
-
-    public ExtendIntake(Intake intake) {
+    
+    public RetractIntake(Intake intake) {
         m_intake = intake;
         addRequirements(m_intake);
     }
@@ -21,7 +21,7 @@ public class ExtendIntake extends Command {
 
     @Override
     public void execute() {
-        m_intake.extend();
+        m_intake.retract();
     }
 
     @Override

@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DebugMotors;
 
@@ -12,12 +14,13 @@ public class RunDebugMotors extends Command {
   private final DebugMotors m_DebugMotors;
   private int motorID;
   private double speed;
+  private DoubleSupplier speeds;
 
   /** Creates a new RunDebugMotors. */
-  public RunDebugMotors(int motorID, double speed, DebugMotors debugMotors) {
+  public RunDebugMotors(int motorID, DoubleSupplier speed, DebugMotors debugMotors) {
     this.m_DebugMotors = debugMotors;
+    this.speeds = speed;
     this.motorID = motorID;
-    this.speed = speed;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(this.m_DebugMotors);
   }
@@ -29,13 +32,15 @@ public class RunDebugMotors extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_DebugMotors.runMotor(motorID, speed);
+    this.speed = this.speeds.getAsDouble();
+    // System.out.println("Debug motors ran with speed of: " + this.speed);
+    m_DebugMotors.runMotor(this.motorID, this.speed);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_DebugMotors.stopMotor(motorID);
+    m_DebugMotors.stopMotor(this.motorID);
   }
 
   // Returns true when the command should end.

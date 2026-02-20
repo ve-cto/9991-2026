@@ -2,10 +2,8 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.Map;
-import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
@@ -13,12 +11,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.LEDPattern.GradientType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import edu.wpi.first.wpilibj2.command.Command;
 
 public class Led extends SubsystemBase {
     private Timer flashTimer;
@@ -41,8 +37,6 @@ public class Led extends SubsystemBase {
     // AUTONOMOUS,
     // ALIGNED,        // Aligned to the hub?
     // UNALIGNED,
-    // VISIBLE,        // Is the hub visible?
-    // NOTVISIBLE,
     // BLANK
 
     private LEDPattern robotDisconnectMask = LEDPattern.steps(Map.of(0, Color.kWhite, 0.1, Color.kBlack)).scrollAtRelativeSpeed(Percent.per(Second).of(5));
@@ -70,6 +64,10 @@ public class Led extends SubsystemBase {
 
     private LEDPattern ledBlank = LEDPattern.solid(Color.kBlack);
 
+    /*
+     * Construct a new Led instance.
+     * Only call this once, as the robot cannot handle multiple instances. 
+     */
     public Led() {
         l_led = new AddressableLED(Constants.Led.l_ledID);
         l_ledBuffer = new AddressableLEDBuffer(Constants.Led.kLedLength);
@@ -80,6 +78,9 @@ public class Led extends SubsystemBase {
         l_led.start();
     }
 
+    /*
+     * Called every 20ms.
+     */
     public void periodic() {
         updateFlashing();
         try {
@@ -114,14 +115,17 @@ public class Led extends SubsystemBase {
         l_led.setData(l_ledBuffer);
     }
 
-    public Constants.Led.StatusList getStatus() {
-        return this.Status;
-    }
-
+    /*
+     * Set the LEDs to a status.
+     */
     public void setStatus(Constants.Led.StatusList desiredStatus) {
         this.Status = desiredStatus;
     }
 
+    /*
+     * Cause the LEDs to flash a specific status a specific number of times, and with a certain delay between each flash.
+     * New startFlashing requests override old ones.
+     */
     public void startFlashing(Constants.Led.StatusList desiredStatus, int numFlashes, double speed) {
         // If it's retriggered - ignore it
         // if (!isFlashing) {
@@ -135,7 +139,7 @@ public class Led extends SubsystemBase {
         //     flashTimer.start();
         //     System.out.println("Started flashing: " + desiredStatus);
         // }
-        System.out.println("Started flashing!");
+        // System.out.println("Started flashing!");
         // If startFlashing is retriggered, reset.
         isFlashing = true;
         flashCount = 0;
@@ -148,10 +152,13 @@ public class Led extends SubsystemBase {
         // System.out.println("Started flashing: " + desiredStatus);
     }
 
+    /*
+     * Handles timing flashes on the LED's. This method should be called periodically.
+     */
     public void updateFlashing() {
         if (isFlashing) {
             if (flashTimer.get() >= flashSpeed) {
-                System.out.println("Timer reset!");
+                // System.out.println("Timer reset!");
                 flashTimer.reset();
                 ledOn = !ledOn;
 
@@ -171,46 +178,53 @@ public class Led extends SubsystemBase {
         }
     }
 
+    /*
+     * If the LEDs are currently flashing, end their flash cycle.
+     */
+    public void stopFlashing() {
+        if (isFlashing) {
+            isFlashing = false;
+        }
+    }
+
+    /*
+     * Returns true if the LEDs are currently executing a flash command
+     */
     public boolean getFlashing() {
         return this.isFlashing;
     }
-
-    public Command clear() {
-        return runOnce(() -> this.setStatus(Constants.Led.StatusList.BLANK));
+    
+    /*
+     * Return the status currently being displayed by the LEDs.
+     */
+    public Constants.Led.StatusList getStatus() {
+        return this.Status;
     }
 
+    /*
+     * Schedule a command to clear the LED's. Overrides and stops any flash requests.
+     */
+    public Command clear() {
+        return runOnce(() -> this.stopFlashing()).andThen(() -> this.setStatus(Constants.Led.StatusList.BLANK));
+    }
+
+    /*
+     * Display a status on the LEDs
+     */
     public Command display(Constants.Led.StatusList status) {
         return runOnce(() -> this.setStatus(status));
     }
 
+    /*
+     * Flash the LEDs with a specific status. Overrides any other setstatus commands while running.
+     */
     public Command flash(Constants.Led.StatusList status, int numFlashes, double speed) {
         return runOnce(() -> this.startFlashing(status, numFlashes, speed));
     }
 
-    public Command displayIdle() {
-        return runOnce(() -> this.setStatus(Constants.Led.StatusList.IDLE));
-    }
-
-    public Command displayDisconnect() {
-        return runOnce(() -> this.setStatus(Constants.Led.StatusList.DISCONNECT));
-    }
-    
-    public Command displayDisabled() {
-        return runOnce(() -> this.setStatus(Constants.Led.StatusList.DISABLED));
-    }
-
-    public Command displayTargeted(BooleanSupplier b) {
-        return run(() -> {
-            if (b.getAsBoolean()) {
-                this.setStatus(Constants.Led.StatusList.ALIGNED);
-            } else {
-                this.setStatus(Constants.Led.StatusList.UNALIGNED);
-            }
-        });
-    }
-
     /*
-     * Displays either the teleop sequence OR the autonomous sequence depending on which mode is enabled
+     * Display either the teleop status OR the autonomous status depending on which mode is enabled.
+     * Fetched from the DriverStation when called.
      */
     public Command displayTeleAuto() {
         return runOnce(() -> {

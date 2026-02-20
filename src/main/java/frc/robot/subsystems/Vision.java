@@ -70,6 +70,9 @@ public class Vision extends SubsystemBase {
     double[] diff = networkPose;
     Pose2d drivetrainPose = new Pose2d();
 
+    /*
+     * Create a new vision instance.
+     */
     public Vision(CommandSwerveDrivetrain drivetrain, NetworkTablesIO networkTablesIO) {
         m_drivetrain = drivetrain;
         m_networkTablesIO = networkTablesIO;
@@ -118,25 +121,15 @@ public class Vision extends SubsystemBase {
         // }
         this.networkPose = m_networkTablesIO.getNetworkPoseArray();
         this.drivetrainPose = m_networkTablesIO.getNetworkPose();
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        // throttle results (skip loop)
-        double now = Timer.getFPGATimestamp();
-        if (now - m_lastVisionSimUpdate < kVisionSimMinDt) {
-            return;
-        }
-
-        visionSim.update(this.drivetrainPose);
-        this.diff = this.networkPose;
-        m_lastVisionSimUpdate = now;
     }   
 
     public Pose2d getNetworkPose() {
         return this.drivetrainPose;
     }
 
+    /*
+     * 
+     */
     public void addVisionMeasurement() {
         // only run if we aren't simulating
         if (RobotBase.isReal()) {
@@ -192,7 +185,7 @@ public class Vision extends SubsystemBase {
     }
 
     /*
-     * Gets a targets pose from the field map
+     * Gets an apriltag's pose from the field map
      * return Pose3d
      */
     public Pose3d getTargetPose(int targetID) {
@@ -206,6 +199,7 @@ public class Vision extends SubsystemBase {
     /*
      * Gets a target pose from the field map IF it is currently visible
      * return Pose3d
+     * return null if target is not visible
      */
     public Pose3d getVisibleTargetPose(int targetID) {
         if (getTargetVisible(targetID)) {
@@ -231,13 +225,34 @@ public class Vision extends SubsystemBase {
         return new double[] {roll, pitch, yaw};
     }
 
-    public void driveToApriltagHelper(int targetID, CommandSwerveDrivetrain commandSwerveDrivetrain) {
-        var targetPose3d = getTargetPose(targetID);
-        if (targetPose3d == null) {
-            // Target not present in field layout (or not available) - do nothing.
-            // Avoid throwing a NullPointerException when callers assume a pose exists.
+    /*
+     * Drive to an apriltag.
+     * Sends a request to the drivetrain to drive to the pose of a given apriltag.
+     * Not reccomended - does not use command based paradimn.
+     */
+    // public void driveToApriltagHelper(int targetID, CommandSwerveDrivetrain commandSwerveDrivetrain) {
+    //     var targetPose3d = getTargetPose(targetID);
+    //     if (targetPose3d == null) {
+    //         // Target not present in field layout (or not available) - do nothing.
+    //         // Avoid throwing a NullPointerException when callers assume a pose exists.
+    //         return;
+    //     }
+    //     commandSwerveDrivetrain.driveToPose(targetPose3d.toPose2d(), this.m_networkTablesIO);
+    // }
+
+    /*
+     * Runs every 20ms while simulating.
+     */
+    @Override
+    public void simulationPeriodic() {
+        // throttle results (skip loop)
+        double now = Timer.getFPGATimestamp();
+        if (now - m_lastVisionSimUpdate < kVisionSimMinDt) {
             return;
         }
-        commandSwerveDrivetrain.driveToPose(targetPose3d.toPose2d(), this.m_networkTablesIO);
+
+        visionSim.update(this.drivetrainPose);
+        this.diff = this.networkPose;
+        m_lastVisionSimUpdate = now;
     }
 }

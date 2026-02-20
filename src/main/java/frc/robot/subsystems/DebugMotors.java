@@ -31,6 +31,7 @@ public class DebugMotors extends SubsystemBase {
   }
 
   /*
+   * Run a motor. 
    * motorID == value from 1-5, corresponding to debug motor 1-5.
    */
   public void runMotor(int motorID, double speed) {
@@ -38,6 +39,7 @@ public class DebugMotors extends SubsystemBase {
       switch (motorID) {
         case 1:
           m_motor1.set(speed);
+          System.out.println("Motor1 set to: " + speed);
           break;
         case 2:
           m_motor2.set(speed);
@@ -55,6 +57,10 @@ public class DebugMotors extends SubsystemBase {
     } // does nothing if id is out of range
   }
 
+  /*
+   * Stop a motor.
+   * motorID == value from 1-5, corresponding to debug motor 1-5.
+   */
   public void stopMotor(int motorID) {
     switch (motorID) {
       case 1:

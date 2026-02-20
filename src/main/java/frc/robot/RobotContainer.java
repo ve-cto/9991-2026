@@ -13,31 +13,29 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.path.PointTowardsZone;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import static edu.wpi.first.units.Units.*;
 // Command Setup and Controllers
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 // Commands
-import frc.robot.Constants;
-import frc.robot.commands.ExtendIntake;
-import frc.robot.commands.RetractIntake;
-import frc.robot.commands.RunDebugMotors;
-import frc.robot.commands.RunIntake;
 import frc.robot.commands.drive.DriveToApriltag;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.PointToHub;
 import frc.robot.commands.drive.PointToPose;
+import frc.robot.commands.RunDebugMotors;
 import frc.robot.commands.drive.UpdatePose;
+import frc.robot.commands.intake.ExtendIntake;
+import frc.robot.commands.intake.RetractIntake;
+import frc.robot.commands.intake.RunIntake;
 // Subsystems
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Led;
@@ -84,12 +82,17 @@ public class RobotContainer {
     // #endregion Misc
     
     public RobotContainer() {
-        // Create our auto chooser automatically with all of the autos in pathplanner.
+        // Create our auto chooser automatically with all of the autos from pathplanner.
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
         
         // Warm up on-the-fly path generation
         CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
+
+        NamedCommands.registerCommand("PointToHub", new PointToHub(() -> 0.0, () -> 0.0, drivetrain, m_networkTablesIO));
+        NamedCommands.registerCommand("ExtendIntake", new ExtendIntake(m_intake));
+        NamedCommands.registerCommand("RetractIntake", new RetractIntake(m_intake));
+        NamedCommands.registerCommand("RunIntake", new RunIntake(m_intake, Constants.Intake.kIntakeForwardSpeed));
 
         // Bind the commands to the controller inputs.
         configureBindings();
@@ -133,14 +136,15 @@ public class RobotContainer {
         // #endregion Swerve
 
         // #region LEDs
+        // If nothing else is happening - subsystem gets current mode (auto or teleop) and applies based on that
         m_led.setDefaultCommand(m_led.displayTeleAuto());
-        // RobotModeTriggers only runs when the event happens, NOT while the event is ocurring (runs on entry to disabled but NOT while disabled)
-        // If the robot is ESTOPPED, flash & switch
+        // RobotModeTriggers only runs when the event happens, NOT while the event is ocurring (eg: runs on entry to disabled but NOT while disabled)
+        // If the robot is ESTOPPED, flash
         RobotModeTriggers.disabled().and(() -> DriverStation.isDSAttached() && DriverStation.isEStopped()).whileTrue(m_led.flash(Constants.Led.StatusList.ESTOPPED, 5, 0.1).ignoringDisable(true));
-        // If the robot is connected, but disabled
-        RobotModeTriggers.disabled().and(() -> DriverStation.isDSAttached() && !DriverStation.isEStopped()).whileTrue(m_led.displayDisabled().ignoringDisable(true));
-        // If the robot is disconnected
-        RobotModeTriggers.disabled().and(() -> !DriverStation.isDSAttached()).whileTrue(m_led.displayDisconnect().ignoringDisable(true));
+        // If the robot is connected to the DS, but disabled
+        RobotModeTriggers.disabled().and(() -> DriverStation.isDSAttached() && !DriverStation.isEStopped()).whileTrue(m_led.display(Constants.Led.StatusList.DISABLED).ignoringDisable(true));
+        // If the robot is disconnected from the DS
+        RobotModeTriggers.disabled().and(() -> !DriverStation.isDSAttached()).whileTrue(m_led.display(Constants.Led.StatusList.DISCONNECT).ignoringDisable(true));
         // #endregion LEDs
 
         // #region Intake
@@ -170,16 +174,15 @@ public class RobotContainer {
         // );
         
         // Points the robot towards the pose of the hub corresponding to the robots alliance.
-        driveJoystick.cross().whileTrue(
-            // Blue hub (4.65, 4)
-            // Red hub (12, 4)
-            new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)
-                .alongWith(m_led.displayTargeted(() -> drivetrain.getAligned()))
-        );
+        // driveJoystick.cross().whileTrue(
+        //     // Blue hub (4.65, 4)
+        //     // Red hub (12, 4)
+        //     new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO) 
+        // );
 
-        driveJoystick.square().whileTrue(
-            new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, m_networkTablesIO)
-        );
+        // driveJoystick.square().whileTrue(
+        //     new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, m_networkTablesIO)
+        // );
         // #endregion Poses
         
         // #region Vision
@@ -191,24 +194,24 @@ public class RobotContainer {
         // #endregion Vision
 
         // #region DebugMotors
-        // Manually shift motors forwards and backwards at half speed. Note that only one motor can be in motion at a time.
+        // Manually shift motors. Note that only one motor can be in motion at a time. Hold L1 to run backwards, use L2 to set speed.
         // motorID 1 = CAN ID 15
         // motorID 2 = CAN ID 16
         // motorID 3 = CAN ID 17
         // motorID 4 = CAN ID 18
         
-        driveJoystick.povUp().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(1, 0.5, m_DebugMotors));
-        driveJoystick.povRight().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(2, 0.5, m_DebugMotors));
-        driveJoystick.povDown().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(3, 0.5, m_DebugMotors));
-        driveJoystick.povLeft().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(4, 0.5, m_DebugMotors));
+        driveJoystick.povUp().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(1, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        driveJoystick.povRight().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(2, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        driveJoystick.povDown().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(3, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        driveJoystick.povLeft().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(4, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
 
-        driveJoystick.povUp().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(1, -0.5, m_DebugMotors));
-        driveJoystick.povRight().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(2, -0.5, m_DebugMotors));
-        driveJoystick.povDown().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(3, -0.5, m_DebugMotors));
-        driveJoystick.povLeft().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(4, -0.5, m_DebugMotors));
+        driveJoystick.povUp().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(1, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        driveJoystick.povRight().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(2, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        driveJoystick.povDown().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(3, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        driveJoystick.povLeft().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(4, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
         // #endregion DebugMotors
         
-        // Update the robot's odometry. Unsure if this needs to be at the end or not, but it makes sense if it is.
+        // Update the robot's odometry. Unsure if this needs to be at the end or not, but it makes sense if it is. (pregenerated by pheonix)
         drivetrain.registerTelemetry(logger::telemeterize);
     }
     
