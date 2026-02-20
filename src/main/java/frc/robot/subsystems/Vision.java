@@ -226,21 +226,6 @@ public class Vision extends SubsystemBase {
     }
 
     /*
-     * Drive to an apriltag.
-     * Sends a request to the drivetrain to drive to the pose of a given apriltag.
-     * Not reccomended - does not use command based paradimn.
-     */
-    // public void driveToApriltagHelper(int targetID, CommandSwerveDrivetrain commandSwerveDrivetrain) {
-    //     var targetPose3d = getTargetPose(targetID);
-    //     if (targetPose3d == null) {
-    //         // Target not present in field layout (or not available) - do nothing.
-    //         // Avoid throwing a NullPointerException when callers assume a pose exists.
-    //         return;
-    //     }
-    //     commandSwerveDrivetrain.driveToPose(targetPose3d.toPose2d(), this.m_networkTablesIO);
-    // }
-
-    /*
      * Runs every 20ms while simulating.
      */
     @Override
