@@ -24,6 +24,7 @@ public class Led extends SubsystemBase {
     private double flashSpeed;
     private Constants.Led.StatusList flashStatus;
     private boolean ledOn;
+    private boolean isEstopped;
     
     private AddressableLED l_led;
 
@@ -33,7 +34,7 @@ public class Led extends SubsystemBase {
 
     // DISCONNECT,
     // DISABLED,
-    // IDLE,           
+    // TELEOP,           
     // AUTONOMOUS,
     // ALIGNED,        // Aligned to the hub?
     // UNALIGNED,
@@ -51,9 +52,9 @@ public class Led extends SubsystemBase {
     // private LEDPattern robotEStopped = robotEStoppedBase.breathe(Seconds.of(3)).atBrightness(Percent.of(100));
     private LEDPattern robotEStopped = robotEStoppedBase.atBrightness(Percent.of(100));
 
-    private LEDPattern robotIdleMask = LEDPattern.steps(Map.of(0, Color.kWhite, 0.4, Color.kBlack)).scrollAtRelativeSpeed(Percent.per(Second).of(10));
-    private LEDPattern robotIdleBase = LEDPattern.gradient(GradientType.kContinuous, Color.kBlue, Color.kPurple).scrollAtRelativeSpeed(Percent.per(Second).of(20));
-    private LEDPattern robotIdle = robotIdleBase.mask(robotIdleMask).atBrightness(Percent.of(100));
+    private LEDPattern robotTeleopMask = LEDPattern.steps(Map.of(0, Color.kWhite, 0.4, Color.kBlack)).scrollAtRelativeSpeed(Percent.per(Second).of(10));
+    private LEDPattern robotTeleopBase = LEDPattern.gradient(GradientType.kContinuous, Color.kBlue, Color.kPurple).scrollAtRelativeSpeed(Percent.per(Second).of(20));
+    private LEDPattern robotTeleop = robotTeleopBase.mask(robotTeleopMask).atBrightness(Percent.of(100));
 
     private LEDPattern robotAutonomousMask = LEDPattern.steps(Map.of(0, Color.kWhite, 0.8, Color.kBlack)).scrollAtRelativeSpeed(Percent.per(Second).of(50));
     private LEDPattern robotAutonomousBase = LEDPattern.rainbow(255, 200).scrollAtRelativeSpeed(Percent.per(Second).of(25));
@@ -79,36 +80,40 @@ public class Led extends SubsystemBase {
     }
 
     /*
-     * Called every 20ms.
+     * Called every 20ms - update flash cycle and statuses  
      */
     public void periodic() {
         updateFlashing();
         try {
-            switch (this.Status) {
-                case DISCONNECT:
-                    robotDisconnect.applyTo(this.l_ledBuffer);
-                    break;
-                case DISABLED:
-                    robotDisabled.applyTo(this.l_ledBuffer);
-                    break;
-                case IDLE:
-                    robotIdle.applyTo(this.l_ledBuffer);
-                    break;
-                case AUTONOMOUS:
-                    robotAutonomous.applyTo(this.l_ledBuffer);
-                    break;
-                case ALIGNED:
-                    robotAligned.applyTo(this.l_ledBuffer);
-                    break;
-                case UNALIGNED:
-                    robotUnaligned.applyTo(this.l_ledBuffer);
-                    break;
-                case ESTOPPED:
-                    robotEStopped.applyTo(this.l_ledBuffer);
-                    break;
-                case BLANK:
-                    ledBlank.applyTo(this.l_ledBuffer);
-                    break;
+            if (!isEstopped) {
+                switch (this.Status) {
+                    case DISCONNECT:
+                        robotDisconnect.applyTo(this.l_ledBuffer);
+                        break;
+                    case DISABLED:
+                        robotDisabled.applyTo(this.l_ledBuffer);
+                        break;
+                    case TELEOP:
+                        robotTeleop.applyTo(this.l_ledBuffer);
+                        break;
+                    case AUTONOMOUS:
+                        robotAutonomous.applyTo(this.l_ledBuffer);
+                        break;
+                    case ALIGNED:
+                        robotAligned.applyTo(this.l_ledBuffer);
+                        break;
+                    case UNALIGNED:
+                        robotUnaligned.applyTo(this.l_ledBuffer);
+                        break;
+                    case ESTOPPED:
+                        robotEStopped.applyTo(this.l_ledBuffer);
+                        break;
+                    case BLANK:
+                        ledBlank.applyTo(this.l_ledBuffer);
+                        break;
+                }
+            } else {
+                robotEStopped.applyTo(this.l_ledBuffer);
             }
         } catch (NullPointerException e) {}
 
@@ -229,7 +234,7 @@ public class Led extends SubsystemBase {
     public Command displayTeleAuto() {
         return runOnce(() -> {
             if (DriverStation.isTeleop()) {
-                this.setStatus(Constants.Led.StatusList.IDLE); 
+                this.setStatus(Constants.Led.StatusList.TELEOP); 
 
             } else {
                 this.setStatus(Constants.Led.StatusList.AUTONOMOUS);
@@ -237,9 +242,20 @@ public class Led extends SubsystemBase {
         });
     }
 
+    public Command estop() {
+        return runOnce(() -> {
+            this.isEstopped = true;    
+            
+            startFlashing(Constants.Led.StatusList.ESTOPPED, 5, 0.1);
+        });
+    }
+    /*
+     * Display the default status given the current robot state.
+     * (Disconnected, Disabled, Autonomous, Teleop)
+     */
     public Command handleDefault() {
         return runOnce(() -> {
-            // Skip this if we are EStopped.
+            // Skip this if we are EStopped. (So we don't overwrite the estop specific lights)
             if (DriverStation.isEStopped()) {
                 return;
             } else {
@@ -250,7 +266,7 @@ public class Led extends SubsystemBase {
                 } else if (DriverStation.isAutonomousEnabled()) {
                     this.setStatus(Constants.Led.StatusList.AUTONOMOUS);
                 } else if (DriverStation.isTeleopEnabled()) {
-                    this.setStatus(Constants.Led.StatusList.IDLE);
+                    this.setStatus(Constants.Led.StatusList.TELEOP);
                 }
             }
         }).ignoringDisable(true);

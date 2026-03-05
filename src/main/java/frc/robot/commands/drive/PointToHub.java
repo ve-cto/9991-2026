@@ -4,8 +4,6 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.NetworkTablesIO;
@@ -27,12 +25,6 @@ public class PointToHub extends Command {
         this.m_velY = velY;
         this.m_networkTablesIO = networkTablesIO;
         
-        // if (DriverStation.getAlliance().toString() == "Blue1" || DriverStation.getAlliance().toString() == "Blue2" || DriverStation.getAlliance().toString() == "Blue3") {
-        //     this.m_targetPose = blueHubPose;
-        // } else {
-        //     System.out.println(DriverStation.getAlliance().toString());
-        //     this.m_targetPose = redHubPose;
-        // }
         addRequirements(drivetrain);
     }   
 

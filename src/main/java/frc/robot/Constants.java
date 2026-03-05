@@ -56,7 +56,7 @@ public final class Constants {
         public static enum StatusList {
             DISCONNECT,
             DISABLED,
-            IDLE,           
+            TELEOP,           
             AUTONOMOUS,
             ALIGNED,        // Aligned to the hub? / Ready to shoot?
             UNALIGNED,

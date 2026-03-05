@@ -5,7 +5,6 @@
 package frc.robot.subsystems;
 
 import java.text.DecimalFormat;
-import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +30,7 @@ public class NetworkTablesIO extends SubsystemBase {
   BooleanSubscriber allianceSubscriber = fmsTable.getBooleanTopic("IsRedAlliance").subscribe(isRedAlliance);
 
   DecimalFormat oneDP = new DecimalFormat("#.#");
+  DecimalFormat twoDP = new DecimalFormat("#.##");
 
   /** Creates a new NetworkTablesIO. */
   public NetworkTablesIO() {}

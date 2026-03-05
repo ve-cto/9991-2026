@@ -68,10 +68,10 @@ public class RobotContainer {
     // #endregion Subsystems
 
     // #region Controllers
-    // private final CommandXboxController driveJoystick = new CommandXboxController(Constants.Controller.kDriverControllerPort);
-    // private final CommandXboxController operatorJoystick = new CommandXboxController(Constants.Controller.kOperatorControllerPort);
-    private final CommandPS4Controller driveJoystick = new CommandPS4Controller(Constants.Controller.kDriverControllerPort);
-    private final CommandPS4Controller operatorJoystick = new CommandPS4Controller(Constants.Controller.kOperatorControllerPort);
+    private final CommandXboxController driveJoystick = new CommandXboxController(Constants.Controller.kDriverControllerPort);
+    private final CommandXboxController operatorJoystick = new CommandXboxController(Constants.Controller.kOperatorControllerPort);
+    // private final CommandPS4Controller driveJoystick = new CommandPS4Controller(Constants.Controller.kDriverControllerPort);
+    // private final CommandPS4Controller operatorJoystick = new CommandPS4Controller(Constants.Controller.kOperatorControllerPort);
     // #endregion Controllers
 
     // #region Misc
@@ -130,14 +130,14 @@ public class RobotContainer {
 
         // Reset the field-centric heading on button press. Note that this has limited effect during the actual game, as m_vision measurements will override it.
         // driveJoystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        driveJoystick.R1().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        driveJoystick.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         // #endregion Swerve
 
         // #region LEDs
         // Default to displaying the specific modes' pattern (disconn, disabl, auto, teleop)
         m_led.setDefaultCommand(m_led.handleDefault().ignoringDisable(true));
         // If the robot is ESTOPPED, flash
-        RobotModeTriggers.disabled().and(() -> DriverStation.isDSAttached() && DriverStation.isEStopped()).whileTrue(m_led.flash(Constants.Led.StatusList.ESTOPPED, 5, 0.1).ignoringDisable(true));
+        RobotModeTriggers.disabled().and(() -> DriverStation.isDSAttached() && DriverStation.isEStopped()).whileTrue(m_led.estop().ignoringDisable(true));
         // #endregion LEDs
 
         // #region Intake
@@ -166,16 +166,16 @@ public class RobotContainer {
         // #region Poses
         // Methods to drive or point the robot to certain positions on the field.
 
-        // driveJoystick.circle().whileTrue(
+        // driveJoystick.b().whileTrue(
         //     new DriveToApriltag(5, drivetrain, m_vision)
         // );
         
         // Points the robot towards the pose of the hub corresponding to the robots alliance.
-        // driveJoystick.cross().whileTrue(
-        //     // Blue hub (4.65, 4)
-        //     // Red hub (12, 4)
-        //     new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO) 
-        // );
+        driveJoystick.a().whileTrue(
+            // Blue hub (4.65, 4)
+            // Red hub (12, 4)
+            new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO) 
+        );
 
         // driveJoystick.square().whileTrue(
         //     new DriveToPose(new Pose2d(2.0, 2.0, new Rotation2d()), drivetrain, m_networkTablesIO)
@@ -197,15 +197,24 @@ public class RobotContainer {
         // motorID 3 = CAN ID 17
         // motorID 4 = CAN ID 18
         
-        driveJoystick.povUp().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(1, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
-        driveJoystick.povRight().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(2, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
-        driveJoystick.povDown().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(3, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
-        driveJoystick.povLeft().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(4, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        // driveJoystick.povUp().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(1, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        // driveJoystick.povRight().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(2, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        // driveJoystick.povDown().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(3, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        // driveJoystick.povLeft().and(driveJoystick.L1().negate()).whileTrue(new RunDebugMotors(4, () -> (driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        // driveJoystick.povUp().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(1, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        // driveJoystick.povRight().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(2, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        // driveJoystick.povDown().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(3, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        // driveJoystick.povLeft().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(4, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
 
-        driveJoystick.povUp().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(1, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
-        driveJoystick.povRight().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(2, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
-        driveJoystick.povDown().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(3, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
-        driveJoystick.povLeft().and(driveJoystick.L1()).whileTrue(new RunDebugMotors(4, () -> -(driveJoystick.getL2Axis() + 1)/2, m_DebugMotors));
+        driveJoystick.povUp().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(1, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        driveJoystick.povRight().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(2, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        driveJoystick.povDown().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(3, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        driveJoystick.povLeft().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(4, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        driveJoystick.povUp().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(1, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        driveJoystick.povRight().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(2, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        driveJoystick.povDown().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(3, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        driveJoystick.povLeft().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(4, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        
         // #endregion DebugMotors
         
         // Update the robot's odometry. Unsure if this needs to be at the end or not, but it makes sense if it is. (pregenerated by pheonix)
