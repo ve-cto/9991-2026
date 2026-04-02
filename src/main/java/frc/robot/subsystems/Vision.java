@@ -29,15 +29,15 @@ public class Vision extends SubsystemBase {
     public PhotonPoseEstimator poseEstimator;
     public Optional<EstimatedRobotPose> poseEstimate = Optional.empty();
 
-    public final PhotonCamera cameraAlpha = new PhotonCamera(Constants.Vision.kCameraNameAlpha);
-    public final PhotonCamera cameraBeta = new PhotonCamera(Constants.Vision.kCameraNameBeta);
-
-    // public final Integer[] hubTagsRed = {8, 9, 10, 11};
-    // public final Integer[] hubTagsBlue = {24, 25, 26, 27};
+    public final PhotonCamera cameraAlpha = new PhotonCamera(Constants.Vision.kCameraAlphaName);
+    public final PhotonCamera cameraBeta = new PhotonCamera(Constants.Vision.kCameraBetaName);
     
     public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+    public static final Transform3d kRobotToCamAlphaSim = new Transform3d(new Translation3d(0.0, 0.0, 0.5), new Rotation3d(0, 0, 0));
+    public static final Transform3d kRobotToCamBetaSim = new Transform3d(new Translation3d(-2.0, 0.0, 3.0), new Rotation3d(0, 0.84, 0)); // -1.5708 radians = 90 degrees
+
     public static final Transform3d kRobotToCamAlpha = new Transform3d(new Translation3d(0.0, 0.0, 0.5), new Rotation3d(0, 0, 0));
-    public static final Transform3d kRobotToCamBeta = new Transform3d(new Translation3d(-2.0, 0.0, 3.0), new Rotation3d(0, 0.84, 0)); // -1.5708 radians = 90 degrees
+    public static final Transform3d kRobotToCamBeta = new Transform3d(new Translation3d(0.0, 0.0, 0.0), new Rotation3d(0, 0.84, 0)); // -1.5708 radians = 90 degrees
 
     private final CommandSwerveDrivetrain m_drivetrain;
     private final NetworkTablesIO m_networkTablesIO;
@@ -49,7 +49,7 @@ public class Vision extends SubsystemBase {
 
     // throttle sim updates
     private double m_lastVisionSimUpdate = 0.0;
-    private static final double kVisionSimMinDt = 0.05; // 50ms
+    private static final double kVisionSimMinDt = 0.10; // 100ms
 
     // throttle addVisionMeasurement updates
     private double m_lastVisionMeasurementUpdate = 0.0;
@@ -77,8 +77,8 @@ public class Vision extends SubsystemBase {
             cameraAlphaSim.enableDrawWireframe(true);
             cameraBetaSim.enableDrawWireframe(true);
 
-            visionSim.addCamera(cameraAlphaSim, kRobotToCamAlpha);
-            visionSim.addCamera(cameraBetaSim, kRobotToCamBeta);
+            visionSim.addCamera(cameraAlphaSim, kRobotToCamAlphaSim);
+            visionSim.addCamera(cameraBetaSim, kRobotToCamBetaSim);
 
             visionSim.getDebugField();
         }

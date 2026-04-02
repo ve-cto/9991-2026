@@ -85,7 +85,6 @@ public class Led extends SubsystemBase {
     public void periodic() {
         updateFlashing();
         try {
-            if (!isEstopped) {
                 switch (this.Status) {
                     case DISCONNECT:
                         robotDisconnect.applyTo(this.l_ledBuffer);
@@ -112,9 +111,6 @@ public class Led extends SubsystemBase {
                         ledBlank.applyTo(this.l_ledBuffer);
                         break;
                 }
-            } else {
-                robotEStopped.applyTo(this.l_ledBuffer);
-            }
         } catch (NullPointerException e) {}
 
         l_led.setData(l_ledBuffer);
@@ -224,7 +220,7 @@ public class Led extends SubsystemBase {
      * Flash the LEDs with a specific status. Overrides any other setstatus commands while running.
      */
     public Command flash(Constants.Led.StatusList status, int numFlashes, double speed) {
-        return runOnce(() -> this.startFlashing(status, numFlashes, speed));
+        return runOnce(() -> this.startFlashing(status, numFlashes, speed)).andThen(() -> this.setStatus(Constants.Led.StatusList.ESTOPPED));
     }
 
     /*
@@ -242,13 +238,15 @@ public class Led extends SubsystemBase {
         });
     }
 
+    /* 
+     * Report to the LED's that the robot has been EStopped.
+     */
     public Command estop() {
         return runOnce(() -> {
-            this.isEstopped = true;    
-            
             startFlashing(Constants.Led.StatusList.ESTOPPED, 5, 0.1);
         });
     }
+
     /*
      * Display the default status given the current robot state.
      * (Disconnected, Disabled, Autonomous, Teleop)
