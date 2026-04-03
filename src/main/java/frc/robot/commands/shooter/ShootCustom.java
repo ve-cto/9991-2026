@@ -5,20 +5,19 @@
 package frc.robot.commands.shooter;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Loader;
 import frc.robot.subsystems.Shooter;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class Shoot extends Command {
+public class ShootCustom extends Command {
   private final Shooter m_shooter;
-  private final Loader m_loader;
+  private double speed;
 
-  /** Creates a new Shoot command. */
-  public Shoot(Shooter shooter, Loader loader) {
+  /** Spin up the shooter using PIDF control to a specific setpoint in Rotations per Minute. */
+  public ShootCustom(double rotationsPerMinute, Shooter shooter) {
     this.m_shooter = shooter;
-    this.m_loader = loader;
+    this.speed = rotationsPerMinute;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(this.m_shooter, this.m_loader);
+    addRequirements(this.m_shooter);
   }
 
   // Called when the command is initially scheduled.
@@ -28,15 +27,13 @@ public class Shoot extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_shooter.run(1.0);
-    m_loader.run(0.5);
+    m_shooter.runClosedLoop(speed);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     m_shooter.stop();
-    m_loader.stop();
   }
 
   // Returns true when the command should end.

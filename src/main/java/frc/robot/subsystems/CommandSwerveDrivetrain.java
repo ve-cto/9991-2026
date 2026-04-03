@@ -369,7 +369,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /*
      * Drives in a straight trajectory from the current pose to a target pose.
      * 
-     * @param pose The desired pose to drive to
+     * @param pose The desired pose to drive towards
      */
     public void driveToPose(Pose2d pose, NetworkTablesIO table) {
         Pose2d currentPose = table.getNetworkPose();

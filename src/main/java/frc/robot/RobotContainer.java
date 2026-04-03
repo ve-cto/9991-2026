@@ -34,10 +34,12 @@ import frc.robot.commands.drive.UpdatePose;
 import frc.robot.commands.intake.ExtendIntake;
 import frc.robot.commands.intake.RetractIntake;
 import frc.robot.commands.intake.RunIntake;
+import frc.robot.commands.shooter.ShootCustom;
 // Subsystems
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Led;
 import frc.robot.subsystems.NetworkTablesIO;
+import frc.robot.subsystems.Shooter;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.DebugMotors;
@@ -65,6 +67,7 @@ public class RobotContainer {
     private final Intake m_intake = new Intake();
     private final DebugMotors m_DebugMotors = new DebugMotors();
     private final Led m_led = new Led();
+    private final Shooter m_shooter = new Shooter();
     // #endregion Subsystems
 
     // #region Controllers
@@ -149,20 +152,24 @@ public class RobotContainer {
             new RunIntake(m_intake, Constants.Intake.kIntakeForwardSpeed)
         );
 
-        // driveJoystick.povDown().whileTrue(
-        //     new ExtendIntake(m_intake)
-        // );
+        driveJoystick.povDown().whileTrue(
+            new ExtendIntake(m_intake)
+        );
 
-        // driveJoystick.povUp().whileTrue(
-        //     new RetractIntake(m_intake)
-        // );
+        driveJoystick.povUp().whileTrue(
+            new RetractIntake(m_intake)
+        );
 
         // driveJoystick.x().whileTrue(new RunDebugMotors(3, () -> 0.4, m_DebugMotors));
         // driveJoystick.a().whileTrue(new RunDebugMotors(3, () -> 0.6, m_DebugMotors));
         // #endregion Intake
-
+        
         // #region Shooter
-
+        // Run our shooter at a given rpm.
+        // Set negative to run backwards.
+        driveJoystick.x().whileTrue((new ShootCustom(500, m_shooter)));
+        driveJoystick.y().whileTrue((new ShootCustom(1000, m_shooter)));
+        driveJoystick.b().whileTrue((new ShootCustom(2000, m_shooter)));
         // #endregion Shooter
 
         // #region Vision
@@ -189,30 +196,17 @@ public class RobotContainer {
         // #endregion Vision
 
         // #region DebugMotors
-        // Manually shift motors. Note that only one motor can be in motion at a time. Hold L1 to run backwards, use L2 to set speed.
-        // motorID 1 = CAN ID 15
-        // motorID 2 = CAN ID 16
-        // motorID 3 = CAN ID 17
-        // motorID 4 = CAN ID 18
-        
         // Forward
         driveJoystick.povUp().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(3, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         driveJoystick.povRight().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(2, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
-        driveJoystick.povDown().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(5, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
-        driveJoystick.povLeft().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(4, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        // driveJoystick.povDown().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(5, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        // driveJoystick.povLeft().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(4, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         // Reverse
         driveJoystick.povUp().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(3, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         driveJoystick.povRight().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(2, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
-        driveJoystick.povDown().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(5, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
-        driveJoystick.povLeft().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(4, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        // driveJoystick.povDown().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(5, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        // driveJoystick.povLeft().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(4, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         // #endregion DebugMotors
-
-
-        // Run our shooter. Replace these values (0.6, 0.7, 0.8) to change the speed.
-
-        driveJoystick.x().whileTrue((new RunDebugMotors(5, () -> -0.6, m_DebugMotors)).alongWith(new RunDebugMotors(4, () -> 0.6, m_DebugMotors)));
-        driveJoystick.y().whileTrue((new RunDebugMotors(5, () -> -0.7, m_DebugMotors)).alongWith(new RunDebugMotors(4, () -> 0.7, m_DebugMotors)));
-        driveJoystick.b().whileTrue((new RunDebugMotors(5, () -> -0.8, m_DebugMotors)).alongWith(new RunDebugMotors(4, () -> 0.8, m_DebugMotors)));
     }
     
     public Command getAutonomousCommand() {
