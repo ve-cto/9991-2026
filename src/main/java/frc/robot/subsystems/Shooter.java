@@ -35,16 +35,20 @@ public class Shooter extends SubsystemBase {
   private double shooterRRPM;
   private double shooterVelocityAv;
   private double closedLoopCalculatedOutput;
-  private final double kFeedforwardHigh;
-  private final double kFeedforwardLow;
 
   /** Creates a new Shooter. */
   public Shooter() {
     m_shooterL = new TalonFX(Constants.Hardware.kShooterLId);
     m_shooterR = new TalonFX(Constants.Hardware.kShooterRId);
     kPidController = new PIDController(0.001, 0.01, 0.0);
-    this.kFeedforwardHigh = 0.68;
-    this.kFeedforwardLow = 0.36;
+  }
+
+  /*
+   * Calculate feedforward linearly.
+   */
+  public double calculateFeedforward(double rotationsPerMinute) {
+    double ff = (0.000688 * rotationsPerMinute + 0.0052);
+    return ff;
   }
 
   @Override
@@ -79,12 +83,7 @@ public class Shooter extends SubsystemBase {
     }
 
     double raw = kPidController.calculate(shooterVelocityAv, rotationsPerMinute);
-    double feedforward;
-    if (rotationsPerMinute * Constants.Shooter.controlRatio >= 3000) {
-      feedforward = Math.signum(rotationsPerMinute)*this.kFeedforwardHigh;
-    } else {
-      feedforward = Math.signum(rotationsPerMinute)*this.kFeedforwardLow;
-    }
+    double feedforward = calculateFeedforward(rotationsPerMinute);
 
     this.closedLoopCalculatedOutput = Math.min(Math.max(raw + feedforward, -Constants.Shooter.maxOutput), Constants.Shooter.maxOutput);
     this.run(this.closedLoopCalculatedOutput);

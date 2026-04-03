@@ -73,7 +73,7 @@ public final class Constants {
 
     public static class Shooter {
         public static final double controlRatio = 4; // Every 4 rotations of the motor, one rotation of the mechanism
-        public static final double maxOutput = 0.90; // Limit the percentage output applied to the shooter motors
+        public static final double maxOutput = 0.95; // Limit the maximum percentage output applied to the shooter motors to avoid overdraw
     }
     
     private Constants() {}

@@ -168,8 +168,8 @@ public class RobotContainer {
         // Run our shooter at a given rpm.
         // Set negative to run backwards.
         driveJoystick.x().whileTrue((new ShootCustom(500, m_shooter)));
-        driveJoystick.y().whileTrue((new ShootCustom(1000, m_shooter)));
-        driveJoystick.b().whileTrue((new ShootCustom(2000, m_shooter)));
+        driveJoystick.y().whileTrue((new ShootCustom(600, m_shooter)));
+        driveJoystick.b().whileTrue((new ShootCustom(700, m_shooter)));
         // #endregion Shooter
 
         // #region Vision
