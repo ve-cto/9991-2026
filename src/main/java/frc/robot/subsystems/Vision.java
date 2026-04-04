@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -112,6 +113,7 @@ public class Vision extends SubsystemBase {
                     }
                     
                     if (poseEstimate.isPresent()) {
+                        System.out.println("Feeding pose to drivetrain:" + poseEstimate.get().estimatedPose.toPose2d().toString());
                         m_drivetrain.addVisionMeasurement(poseEstimate.get().estimatedPose.toPose2d(), result.getTimestampSeconds());
                     }
                 }
@@ -197,6 +199,10 @@ public class Vision extends SubsystemBase {
         double yaw = targetRotation3d.getZ();
         double roll = targetRotation3d.getX();
         return new double[] {roll, pitch, yaw};
+    }
+
+    public Command addVisionMeasurementCommand() {
+        return this.run(() -> this.addVisionMeasurement());
     }
 
     /*

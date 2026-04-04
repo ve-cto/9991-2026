@@ -30,7 +30,6 @@ import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.PointToHub;
 import frc.robot.commands.drive.PointToPose;
 import frc.robot.commands.RunDebugMotors;
-import frc.robot.commands.drive.UpdatePose;
 import frc.robot.commands.drive.PointToAllianceFuel;
 // Subsystems
 import frc.robot.subsystems.Intake;
@@ -188,14 +187,13 @@ public class RobotContainer {
         //     new DriveToPose(new Pose2d(1.0, 1.0, new Rotation2d()), drivetrain, m_networkTablesIO)
         // );
         
-        // While the robot is not disabled (auto, teleop), add m_vision measurements to pose.
-        // TODO: Add a small delay to this so that the m_vision subsystem isn't constantly flooded with requests.
+        // While the robot is not disabled (NOT in auto, teleop, test), add m_vision measurements to pose.
         // RobotModeTriggers.disabled().whileFalse(
-        //     new UpdatePose(m_vision)
+        //     m_vision.addVisionMeasurementCommand()
         // );
 
         driveJoystick.a().and(() -> !m_networkTablesIO.isInOwnAllianceZone()).whileTrue(
-            new PointToAllianceFuel(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)
+            new PointToAllianceFuel(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO).alongWith(m_shooter.runRPMCommand(800))
         );
         // #endregion Vision
 
