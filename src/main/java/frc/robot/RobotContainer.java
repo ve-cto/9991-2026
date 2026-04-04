@@ -113,6 +113,9 @@ public class RobotContainer {
         RobotModeTriggers.disabled().whileTrue(
             drivetrain.applyRequest(() -> swerveIdle).ignoringDisable(true)
         );
+        RobotModeTriggers.test().whileTrue(
+            drivetrain.applyRequest(() -> swerveIdle).ignoringDisable(true)
+        );
 
         // Brake while holding. When the robot brakes, the four drive motors stop and the modules point towards the center of the robot. While breaking, the robot cannot drive.
         // driveJoystick.rightBumper().whileTrue(drivetrain.applyRequest(() -> brake));
