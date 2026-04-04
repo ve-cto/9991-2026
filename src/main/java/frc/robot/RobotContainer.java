@@ -31,10 +31,6 @@ import frc.robot.commands.drive.PointToHub;
 import frc.robot.commands.drive.PointToPose;
 import frc.robot.commands.RunDebugMotors;
 import frc.robot.commands.drive.UpdatePose;
-import frc.robot.commands.intake.ExtendIntake;
-import frc.robot.commands.intake.RetractIntake;
-import frc.robot.commands.intake.RunIntake;
-import frc.robot.commands.shooter.ShootCustom;
 // Subsystems
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Led;
@@ -90,9 +86,12 @@ public class RobotContainer {
         CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
 
         NamedCommands.registerCommand("PointToHub", new PointToHub(() -> 0.0, () -> 0.0, drivetrain, m_networkTablesIO));
-        NamedCommands.registerCommand("ExtendIntake", new ExtendIntake(m_intake));
-        NamedCommands.registerCommand("RetractIntake", new RetractIntake(m_intake));
-        NamedCommands.registerCommand("RunIntake", new RunIntake(m_intake, Constants.Intake.kIntakeForwardSpeed));
+        NamedCommands.registerCommand("ExtendIntake", m_intake.extendIntakeCommand());
+        NamedCommands.registerCommand("RetractIntake", m_intake.retractIntakeCommand());
+        NamedCommands.registerCommand("RunIntake", m_intake.runIntakeCommand());
+        NamedCommands.registerCommand("RunShooter500", m_shooter.runRPMCommand(500));
+        NamedCommands.registerCommand("RunShooter600", m_shooter.runRPMCommand(600));
+        NamedCommands.registerCommand("RunShooter700", m_shooter.runRPMCommand(700));
 
         // Bind the commands to the controller inputs.
         configureBindings();
@@ -149,27 +148,24 @@ public class RobotContainer {
         // #region Intake
         // Methods for an imaginary intake - Extending and retracting an arm which the intake is attached to, and running the intake forwards and backwards.
         driveJoystick.a().whileTrue(
-            new RunIntake(m_intake, Constants.Intake.kIntakeForwardSpeed)
+            m_intake.runIntakeCommand()
         );
 
         driveJoystick.povDown().whileTrue(
-            new ExtendIntake(m_intake)
+            m_intake.extendIntakeCommand()
         );
 
         driveJoystick.povUp().whileTrue(
-            new RetractIntake(m_intake)
+            m_intake.retractIntakeCommand()
         );
-
-        // driveJoystick.x().whileTrue(new RunDebugMotors(3, () -> 0.4, m_DebugMotors));
-        // driveJoystick.a().whileTrue(new RunDebugMotors(3, () -> 0.6, m_DebugMotors));
         // #endregion Intake
         
         // #region Shooter
         // Run our shooter at a given rpm.
         // Set negative to run backwards.
-        driveJoystick.x().whileTrue((new ShootCustom(500, m_shooter)));
-        driveJoystick.y().whileTrue((new ShootCustom(600, m_shooter)));
-        driveJoystick.b().whileTrue((new ShootCustom(700, m_shooter)));
+        driveJoystick.x().whileTrue(m_shooter.runRPMCommand(500));
+        driveJoystick.y().whileTrue(m_shooter.runRPMCommand(600));
+        driveJoystick.b().whileTrue(m_shooter.runRPMCommand(700));
         // #endregion Shooter
 
         // #region Vision
@@ -197,13 +193,13 @@ public class RobotContainer {
 
         // #region DebugMotors
         // Forward
-        driveJoystick.povUp().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(3, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
-        driveJoystick.povRight().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(2, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        // driveJoystick.povUp().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(3, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        // driveJoystick.povRight().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(2, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         // driveJoystick.povDown().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(5, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         // driveJoystick.povLeft().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(4, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         // Reverse
-        driveJoystick.povUp().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(3, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
-        driveJoystick.povRight().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(2, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        // driveJoystick.povUp().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(3, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+        // driveJoystick.povRight().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(2, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         // driveJoystick.povDown().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(5, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         // driveJoystick.povLeft().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(4, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
         // #endregion DebugMotors

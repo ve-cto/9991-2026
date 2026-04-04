@@ -210,7 +210,7 @@ public class Vision extends SubsystemBase {
             return;
         }
 
-        visionSim.update(this.drivetrainPose);
-        m_lastVisionSimUpdate = now;
+        // visionSim.update(this.drivetrainPose);
+        // m_lastVisionSimUpdate = now;
     }
 }

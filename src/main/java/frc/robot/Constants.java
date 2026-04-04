@@ -9,8 +9,8 @@ package frc.robot;
 public final class Constants {
     public static final class Hardware {
         // Swerve takes up the CAN network up to value 12, thus, all motors must be assigned ID's of 13 or higher.
-        public static final int kIntakerId = 17;
-        public static final int kArmId = 99; // ludicrously high value as we aren't using this subsystem yet
+        public static final int kIntakeId = 17;
+        public static final int kArmId = 20; // ludicrously high value as we aren't using this subsystem yet
         public static final int kShooterLId = 19;
         public static final int kShooterRId = 18;
         public static final int kLoaderId = 99;
@@ -20,7 +20,7 @@ public final class Constants {
     
         public static final int kDebugMotor1 = 15;
         public static final int kDebugMotor2 = 16;
-        public static final int kDebugMotor3 = 17;
+        public static final int kDebugMotor3 = 99;
         public static final int kDebugMotor4 = 99;
         public static final int kDebugMotor5 = 99;
 

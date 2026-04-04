@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -76,8 +78,6 @@ public class Shooter extends SubsystemBase {
    * Closed-Loop controlled (PID) using the krakens onboard encoder.
    */
   public void runClosedLoop(double rotationsPerMinute) {
-    kPidController.reset();
-
     if (rotationsPerMinute * Constants.Shooter.controlRatio >= Constants.Hardware.kMaxKrakenFreeSpeed) {
       DriverStation.reportWarning(String.format("WARN: Shooter setpoint %s is greater than maximum attainable motor speed.", rotationsPerMinute), false);
     }
@@ -102,8 +102,26 @@ public class Shooter extends SubsystemBase {
     m_shooterR.set(0);
   }
  
-  // Simulation -----------------------------------------------------------------------------------------------------------------------------------------------------
+  public Command runPercentageCommand(double percentage) {
+    return this.startEnd(() -> this.run(percentage), () -> this.coast());
+  }
 
+  public Command runRPMCommand(double rpm) {
+    return new FunctionalCommand(
+      () -> kPidController.reset(),                // initialize
+      () -> runClosedLoop(rpm),                    // execute
+      interrupted -> coast(),                      // end (with interrupted flag)
+      () -> false,                                 // isFinished (never finishes on its own)
+      this                                         // requirements
+    );
+  }
+
+  public Command brakeCommand() {
+    return this.startEnd(() -> this.stop(), () -> this.coast());
+  }
+
+  // Simulation -----------------------------------------------------------------------------------------------------------------------------------------------------
+  // #region Simulation
   private final DCMotorSim m_motorSimModelL = new DCMotorSim(
     LinearSystemId.createDCMotorSystem(
         DCMotor.getKrakenX60Foc(1), 0.001, 1
@@ -155,4 +173,5 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("shooterVelocityAv", this.shooterVelocityAv);
     SmartDashboard.putNumber("ShooterOutput", this.closedLoopCalculatedOutput);
   }
+  // #endregion Simulation
 }
