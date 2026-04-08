@@ -9,20 +9,24 @@ package frc.robot;
 public final class Constants {
     public static final class Hardware {
         // Swerve takes up the CAN network up to value 12, thus, all motors must be assigned ID's of 13 or higher.
-        public static final int kIntakeId = 17;
-        public static final int kArmId = 20;
-        public static final int kShooterLId = 19;
-        public static final int kShooterRId = 18;
-        public static final int kLoaderId = 21;
+        public static final int kIntakeId = 17; // minicim
+        public static final int kArmId = 20; // minicim
+        public static final int kShooterLId = 19; // kraken
+        public static final int kShooterRId = 18; // kraken
+        public static final int kLoaderId = 21; // probably a cim or a redline
         
-        public static final int kArmEncoderAChannel = 2;
-        public static final int kArmEncoderBChannel = 3;
+        // rev through bore encoder
+        public static final int kArmEncoderAChannel = 2; // blue wire
+        public static final int kArmEncoderBChannel = 3; // yellow(?) wire
     
         public static final int kDebugMotor1 = 15;
         public static final int kDebugMotor2 = 16;
         public static final int kDebugMotor3 = 99;
-        public static final int kDebugMotor4 = 99;
-        public static final int kDebugMotor5 = 99;
+        public static final int kDebugMotor4 = 99; // kraken
+        public static final int kDebugMotor5 = 99; // kraken
+
+        public static final int kLedId = 0; // PWM port
+        public static final int kLedLength = 101;
 
         public static final double kMaxKrakenFreeSpeed = 6000;
     }
@@ -30,12 +34,13 @@ public final class Constants {
     public static final class Intake {
         public static final double kIntakeForwardSpeed = 0.6;
         public static final double kIntakeReverseSpeed = -0.9;
-        public static final double kArmExtendedPosition = 1000;
+        public static final double kArmExtendedPosition = 1000; // TODO: tune
         public static final double kArmRetractedPosition = 0;
     }
 
     public static final class Swerve {
         // Fractional deadband applied to requested velocities (10%)
+        // (if the request is below this value, for example, 5% [0.05], the request will be ignored)
         public static final double kDeadbandFraction = 0.1;
 
         // Maximum angular rate (rotations per second) used to compute rad/s
@@ -43,22 +48,23 @@ public final class Constants {
     }
 
     public static final class Controller {
+        // sticks first, buttons next
+        // always play with the sticks before you play with the buttons amirite
+        // absolute cinema
         public static final int kDriverControllerPort = 0;
         public static final int kOperatorControllerPort = 1;
     }
 
     public static final class Vision {
         public static final String kCameraAlphaName = "limelight3g";
-        public static final String kCameraBetaName = "limelight";
+        public static final String kCameraBetaName = "PLACEHOLDER"; // currently unused
 
         public final Integer[] tagsHubRed = {8, 9, 10, 11};
         public final Integer[] tagsHubBlue = {24, 25, 26, 27};
     }
 
     public static class Led {
-        public static final int l_ledID = 0; // PWM port
-        public static final int kLedLength = 101;
-        
+        // list of all things the leds could display
         public static enum StatusList {
             DISCONNECT,
             DISABLED,

@@ -14,11 +14,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
@@ -95,8 +92,9 @@ public class Vision extends SubsystemBase {
      * Only runs when out of simulation and camera is connected
      */
     public void addVisionMeasurement() {
-        // only run if we aren't simulating & camera is connected
+        // only run if we aren't simulating
         if (RobotBase.isReal()) {
+            // make sure that the camera is connected and thus would be producing valid results
             if (this.cameraAlpha.isConnected()) {
                 // throttle updating to every 200ms
                 double now = Timer.getFPGATimestamp();
@@ -216,6 +214,7 @@ public class Vision extends SubsystemBase {
             return;
         }
 
+        // simulate cameras
         // visionSim.update(this.drivetrainPose);
         // m_lastVisionSimUpdate = now;
     }

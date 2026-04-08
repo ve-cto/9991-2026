@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -37,8 +36,6 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.Constants;
-import frc.robot.commands.drive.PointToPose;
-
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.

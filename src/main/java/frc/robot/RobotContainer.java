@@ -75,8 +75,8 @@ public class RobotContainer {
     // #endregion Subsystems
 
     // #region Controllers
-    // private final CommandXboxController driveJoystick = new CommandXboxController(Constants.Controller.kDriverControllerPort);
-    // private final CommandXboxController operatorJoystick = new CommandXboxController(Constants.Controller.kOperatorControllerPort);
+    // private final CommandPS4Controller driveJoystick = new CommandXboxController(Constants.Controller.kDriverControllerPort);
+    // private final CommandPS4Controller operatorJoystick = new CommandXboxController(Constants.Controller.kOperatorControllerPort);
     private final CommandXboxController driveJoystick = new CommandXboxController(Constants.Controller.kDriverControllerPort);
     private final CommandPS4Controller operatorJoystick = new CommandPS4Controller(Constants.Controller.kOperatorControllerPort);
     // #endregion Controllers

@@ -24,7 +24,6 @@ public class Led extends SubsystemBase {
     private double flashSpeed;
     private Constants.Led.StatusList flashStatus;
     private boolean ledOn;
-    private boolean isEstopped;
     
     private AddressableLED l_led;
 
@@ -65,13 +64,11 @@ public class Led extends SubsystemBase {
 
     private LEDPattern ledBlank = LEDPattern.solid(Color.kBlack);
 
-    /*
-     * Construct a new Led instance.
-     * Only call this once, as the robot cannot handle multiple instances. 
-     */
+    // construct
+    // !! only do this once, the robot will literally kill itself if multiple instances are made !!
     public Led() {
-        l_led = new AddressableLED(Constants.Led.l_ledID);
-        l_ledBuffer = new AddressableLEDBuffer(Constants.Led.kLedLength);
+        l_led = new AddressableLED(Constants.Hardware.kLedId);
+        l_ledBuffer = new AddressableLEDBuffer(Constants.Hardware.kLedLength);
         l_led.setLength(l_ledBuffer.getLength());
         l_led.setData(l_ledBuffer);
         this.isFlashing = false;
@@ -79,9 +76,6 @@ public class Led extends SubsystemBase {
         l_led.start();
     }
 
-    /*
-     * Called every 20ms - update flash cycle and statuses  
-     */
     public void periodic() {
         updateFlashing();
         try {
@@ -124,8 +118,7 @@ public class Led extends SubsystemBase {
     }
 
     /*
-     * Cause the LEDs to flash a specific status a specific number of times, and with a certain delay between each flash.
-     * New startFlashing requests override old ones.
+     * flash the led's with a specific status a specific number of times at a specific speed (seconds)
      */
     public void startFlashing(Constants.Led.StatusList desiredStatus, int numFlashes, double speed) {
         // If it's retriggered - ignore it
@@ -154,7 +147,7 @@ public class Led extends SubsystemBase {
     }
 
     /*
-     * Handles timing flashes on the LED's. This method should be called periodically.
+     * update the flashing logic, called in subsystem periodic
      */
     public void updateFlashing() {
         if (isFlashing) {
@@ -180,7 +173,8 @@ public class Led extends SubsystemBase {
     }
 
     /*
-     * If the LEDs are currently flashing, end their flash cycle.
+     * if the led's are flashing, cancel it
+     * if they aren't flashing, does nothing
      */
     public void stopFlashing() {
         if (isFlashing) {
@@ -189,43 +183,43 @@ public class Led extends SubsystemBase {
     }
 
     /*
-     * Returns true if the LEDs are currently executing a flash command
+     * if the led's are flashing, return true
      */
     public boolean getFlashing() {
         return this.isFlashing;
     }
     
     /*
-     * Return the status currently being displayed by the LEDs.
+     * return what the led's are currently displaying
      */
     public Constants.Led.StatusList getStatus() {
         return this.Status;
     }
 
     /*
-     * Schedule a command to clear the LED's. Overrides and stops any flash requests.
+     * first causes the led's to stop flashing, and then sets them to be blank
      */
     public Command clear() {
         return runOnce(() -> this.stopFlashing()).andThen(() -> this.setStatus(Constants.Led.StatusList.BLANK));
     }
 
     /*
-     * Display a status on the LEDs
+     * tell the led's to show a status
      */
     public Command display(Constants.Led.StatusList status) {
         return runOnce(() -> this.setStatus(status));
     }
 
     /*
-     * Flash the LEDs with a specific status. Overrides any other setstatus commands while running.
+     * flash the led's with a specific status a specific number of times at a specific speed (seconds)
      */
     public Command flash(Constants.Led.StatusList status, int numFlashes, double speed) {
         return runOnce(() -> this.startFlashing(status, numFlashes, speed)).andThen(() -> this.setStatus(Constants.Led.StatusList.ESTOPPED));
     }
 
     /*
-     * Display either the teleop status OR the autonomous status depending on which mode is enabled.
-     * Fetched from the DriverStation when called.
+     * display either the teleop status OR the autonomous status depending on which mode is enabled.
+     * fetched from the DriverStation when called.
      */
     public Command displayTeleAuto() {
         return runOnce(() -> {
@@ -239,7 +233,8 @@ public class Led extends SubsystemBase {
     }
 
     /* 
-     * Report to the LED's that the robot has been EStopped.
+     * inform the led's that the robot has been estopped
+     * causes them to flash, then hold a specific status 
      */
     public Command estop() {
         return runOnce(() -> {
@@ -248,12 +243,15 @@ public class Led extends SubsystemBase {
     }
 
     /*
-     * Display the default status given the current robot state.
-     * (Disconnected, Disabled, Autonomous, Teleop)
+     * display the default status for whatever state the robot is in
+     * if DS is disconnected, show disconnect
+     * if disabled, show disabled
+     * if auto, show auto
+     * if teleop, show teleop
+     * shocking, i know, my pants have been blown off
      */
     public Command handleDefault() {
         return runOnce(() -> {
-            // Skip this if we are EStopped. (So we don't overwrite the estop specific lights)
             if (DriverStation.isEStopped()) {
                 return;
             } else {
