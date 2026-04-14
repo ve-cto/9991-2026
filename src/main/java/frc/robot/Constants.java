@@ -56,7 +56,7 @@ public final class Constants {
     }
 
     public static final class Vision {
-        public static final String kCameraAlphaName = "limelight3g";
+        public static final String kCameraAlphaName = "CameraAlpha";
         public static final String kCameraBetaName = "PLACEHOLDER"; // currently unused
 
         public final Integer[] tagsHubRed = {8, 9, 10, 11};

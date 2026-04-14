@@ -213,9 +213,9 @@ public class RobotContainer {
         // );
         
         // While the robot is not disabled (NOT in auto, teleop, test), add m_vision measurements to pose.
-        // RobotModeTriggers.disabled().whileFalse(
-        //     m_vision.addVisionMeasurementCommand()
-        // );
+        RobotModeTriggers.disabled().whileFalse(
+            m_vision.addVisionMeasurementCommand()
+        );
 
         // driveJoystick.a().and(() -> !m_networkTablesIO.isInOwnAllianceZone()).whileTrue(
         //     new PointToAllianceFuel(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO).alongWith(m_shooter.runRPMCommand(800))
