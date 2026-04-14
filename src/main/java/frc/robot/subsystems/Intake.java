@@ -75,6 +75,10 @@ public class Intake extends SubsystemBase {
         }
     }
 
+    public void moveArm(double speed) {
+        m_arm.set(speed);
+    }
+
     /*
      * stop the pivot motor with braking force
      */
@@ -128,6 +132,10 @@ public class Intake extends SubsystemBase {
      */
     public Command runIntakeCommand(double speed) {
         return this.startEnd(() -> this.run(speed), () -> this.stopIntake());
+    }
+
+    public Command moveArmCommand(double speed) {
+        return this.startEnd(() -> this.moveArm(speed), () -> this.stopArm());
     }
 
     /*

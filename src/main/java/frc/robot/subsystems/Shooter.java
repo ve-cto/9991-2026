@@ -36,32 +36,41 @@ public class Shooter extends SubsystemBase {
   private double shooterVelocityAv;
   private double closedLoopCalculatedOutput;
   private double setpoint = 0;
+  private double motorsVelocityAv;
 
   /** Creates a new Shooter. */
   public Shooter() {
     m_shooterL = new TalonFX(Constants.Hardware.kShooterLId);
     m_shooterR = new TalonFX(Constants.Hardware.kShooterRId);
-    kPidController = new PIDController(0.001, 0.01, 0.0);
+    // kPidController = new PIDController(0.001, 0.01, 0.0);
+    kPidController = new PIDController(0.0001, 0.0008, 0.0);
   }
 
   /*
    * Calculate feedforward linearly.
    */
   public double calculateFeedforward(double rotationsPerMinute) {
-    double ff = (0.000688 * rotationsPerMinute + 0.0052);
+    // double ff = (0.000688 * rotationsPerMinute + 0.0052);
+    double ff = (0.00015 * rotationsPerMinute + 0.236667);
     return ff;
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    this.shooterLRPM = (m_shooterL.getRotorVelocity().getValue().in(RotationsPerSecond) * 60) / Constants.Shooter.kControlRatio;
-    this.shooterRRPM = (m_shooterR.getRotorVelocity().getValue().in(RotationsPerSecond) * 60) / Constants.Shooter.kControlRatio;
+    this.shooterLRPM = (m_shooterL.getRotorVelocity().getValue().in(RotationsPerSecond) * 60);
+    this.shooterRRPM = (m_shooterR.getRotorVelocity().getValue().in(RotationsPerSecond) * 60);
     
-    this.shooterVelocityAv = (this.shooterLRPM + -this.shooterRRPM) / 2;
+    this.shooterVelocityAv = ((-this.shooterLRPM + this.shooterRRPM) / Constants.Shooter.kControlRatio) / 2;
+    this.motorsVelocityAv = (-this.shooterLRPM + this.shooterRRPM) / 2;
 
     SmartDashboard.putBoolean("isAtSetpoint", isAtSetpoint());
     SmartDashboard.putNumber("Setpoint", this.setpoint);
+    SmartDashboard.putNumber("shooterLRPM", this.shooterLRPM);
+    SmartDashboard.putNumber("shooterRRPM", this.shooterRRPM);
+    SmartDashboard.putNumber("shooterVelocityAv", this.shooterVelocityAv);
+    SmartDashboard.putNumber("motorsVelocityAv", this.motorsVelocityAv);
+    SmartDashboard.putNumber("ShooterOutput", this.closedLoopCalculatedOutput);
   }
 
   /*
@@ -69,8 +78,8 @@ public class Shooter extends SubsystemBase {
    * Range (-1, 1)
    */
   public void run(double speed) {
-    m_shooterL.set(speed);
-    m_shooterR.set(-speed);
+    m_shooterL.set(-speed);
+    m_shooterR.set(speed);
   }
 
   // Math.min(Math.max(value, min), max);
@@ -106,7 +115,7 @@ public class Shooter extends SubsystemBase {
   }
  
   public boolean isAtSetpoint() {
-    if (Math.abs(this.setpoint - this.shooterVelocityAv) <= 15) {
+    if (Math.abs(this.setpoint - this.shooterVelocityAv) <= Constants.Shooter.setpointDeadband) {
       return true;
     } else {
       return false;
@@ -142,6 +151,10 @@ public class Shooter extends SubsystemBase {
 
   public Command brakeCommand() {
     return this.startEnd(() -> this.stop(), () -> this.coast());
+  }
+
+  public Command coastCommand() {
+    return this.startEnd(() -> this.coast(),() -> this.coast());
   }
 
   // Simulation -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -189,13 +202,6 @@ public class Shooter extends SubsystemBase {
     s_shooterL.setRotorVelocity(m_motorSimModelL.getAngularVelocity());
     s_shooterR.setRawRotorPosition(m_motorSimModelR.getAngularPosition());
     s_shooterR.setRotorVelocity(m_motorSimModelR.getAngularVelocity());
-
-  
-  
-    SmartDashboard.putNumber("shooterLRPM", this.shooterLRPM);
-    SmartDashboard.putNumber("shooterRRPM", this.shooterRRPM);
-    SmartDashboard.putNumber("shooterVelocityAv", this.shooterVelocityAv);
-    SmartDashboard.putNumber("ShooterOutput", this.closedLoopCalculatedOutput);
   }
   // #endregion Simulation
 }

@@ -173,27 +173,27 @@ public class RobotContainer {
             m_intake.runIntakeCommand()
         );
 
-        // driveJoystick.povDown().whileTrue(
-        //     m_intake.extendIntakeCommand()
-        // );
+        driveJoystick.povDown().whileTrue(
+            m_intake.moveArmCommand(-0.8)
+        );
 
-        // driveJoystick.povUp().whileTrue(
-        //     m_intake.retractIntakeCommand()
-        // );
+        driveJoystick.povUp().whileTrue(
+            m_intake.moveArmCommand(0.8)
+        );
         // #endregion Intake
         
         // #region Shooter
         // Run our shooter at a given rpm.
         // Set negative to run backwards.
         m_shooter.setDefaultCommand(
-            m_shooter.runRPMCommand(500)
+            m_shooter.coastCommand()
         );
 
-        driveJoystick.y().whileTrue(m_shooter.runRPMCommand(600));
-        driveJoystick.b().whileTrue(m_shooter.runRPMCommand(700));
-
-        driveJoystick.x().whileTrue(m_shooter.runRPMCommand(700));
-        driveJoystick.x().and(() -> m_shooter.isAtSetpoint()).whileTrue(m_feeder.feedCommand());
+        driveJoystick.x().whileTrue(m_shooter.runRPMCommand(2500));
+        driveJoystick.y().whileTrue(m_shooter.runRPMCommand(2800));
+        driveJoystick.b().whileTrue(m_shooter.runRPMCommand(3000));
+        
+        // driveJoystick.x().and(() -> m_shooter.isAtSetpoint()).whileTrue(m_feeder.feedCommand());
         // #endregion Shooter
 
         // #region Vision
