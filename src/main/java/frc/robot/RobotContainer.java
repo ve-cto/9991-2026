@@ -169,8 +169,28 @@ public class RobotContainer {
         // #endregion LEDs
 
         // #region Intake
-        driveJoystick.a().whileTrue(
+        driveJoystick.leftBumper().whileTrue(
             m_intake.runIntakeCommand()
+        );
+
+
+
+
+
+        // speed (-1 -> 1)
+        driveJoystick.a().whileTrue(
+            m_feeder.feedCommand(0.8)
+        );
+
+        // driveJoystick.povLeft().and(() -> m_shooter.isAtSetpoint()).whileTrue(
+        //     m_feeder.feedCommand(0.8).alongWith(m_intake.runIntakeCommand())
+        // );
+        // driveJoystick.povLeft().whileTrue(
+        //     m_shooter.runRPMCommand(2800).alongWith(new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO))
+        // );
+
+        driveJoystick.povLeft().whileTrue(
+            m_shooter.runRPMCommand(3500).alongWith(new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)).alongWith(m_feeder.feedCommand(0.8)).alongWith(m_intake.runIntakeCommand())
         );
 
         driveJoystick.povDown().whileTrue(

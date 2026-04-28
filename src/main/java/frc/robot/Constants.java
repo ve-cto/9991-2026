@@ -13,7 +13,7 @@ public final class Constants {
         public static final int kArmId = 16; // minicim
         public static final int kShooterLId = 19; // kraken
         public static final int kShooterRId = 18; // kraken
-        public static final int kLoaderId = 21; // probably a cim or a redline
+        public static final int kLoaderId = 20; // probably a cim or a redline
         
         // rev through bore encoder
         public static final int kArmEncoderAChannel = 2; // blue wire
@@ -32,7 +32,7 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final double kIntakeForwardSpeed = 0.6;
+        public static final double kIntakeForwardSpeed = 0.8;
         public static final double kIntakeReverseSpeed = -0.9;
         public static final double kArmExtendedPosition = 1000; // TODO: tune
         public static final double kArmRetractedPosition = 0;

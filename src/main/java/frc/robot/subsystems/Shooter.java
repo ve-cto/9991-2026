@@ -33,7 +33,7 @@ public class Shooter extends SubsystemBase {
 
   private double shooterLRPM;
   private double shooterRRPM;
-  private double shooterVelocityAv;
+  private double mechanismVelocityAv;
   private double closedLoopCalculatedOutput;
   private double setpoint = 0;
   private double motorsVelocityAv;
@@ -61,14 +61,14 @@ public class Shooter extends SubsystemBase {
     this.shooterLRPM = (m_shooterL.getRotorVelocity().getValue().in(RotationsPerSecond) * 60);
     this.shooterRRPM = (m_shooterR.getRotorVelocity().getValue().in(RotationsPerSecond) * 60);
     
-    this.shooterVelocityAv = ((-this.shooterLRPM + this.shooterRRPM) / Constants.Shooter.kControlRatio) / 2;
+    this.mechanismVelocityAv = ((-this.shooterLRPM + this.shooterRRPM) / Constants.Shooter.kControlRatio) / 2;
     this.motorsVelocityAv = (-this.shooterLRPM + this.shooterRRPM) / 2;
 
     SmartDashboard.putBoolean("isAtSetpoint", isAtSetpoint());
     SmartDashboard.putNumber("Setpoint", this.setpoint);
     SmartDashboard.putNumber("shooterLRPM", this.shooterLRPM);
     SmartDashboard.putNumber("shooterRRPM", this.shooterRRPM);
-    SmartDashboard.putNumber("shooterVelocityAv", this.shooterVelocityAv);
+    SmartDashboard.putNumber("mechanismVelocityAv", this.mechanismVelocityAv);
     SmartDashboard.putNumber("motorsVelocityAv", this.motorsVelocityAv);
     SmartDashboard.putNumber("ShooterOutput", this.closedLoopCalculatedOutput);
   }
@@ -94,7 +94,7 @@ public class Shooter extends SubsystemBase {
       DriverStation.reportWarning(String.format("WARN: Shooter setpoint %s is greater than maximum attainable motor speed.", rotationsPerMinute), false);
     }
 
-    double raw = kPidController.calculate(this.shooterVelocityAv, rotationsPerMinute);
+    double raw = kPidController.calculate(this.mechanismVelocityAv, rotationsPerMinute);
     double feedforward = calculateFeedforward(rotationsPerMinute);
 
     this.closedLoopCalculatedOutput = Math.min(Math.max(raw + feedforward, -Constants.Shooter.kMaxOutput), Constants.Shooter.kMaxOutput);
@@ -115,7 +115,7 @@ public class Shooter extends SubsystemBase {
   }
  
   public boolean isAtSetpoint() {
-    if (Math.abs(this.setpoint - this.shooterVelocityAv) <= Constants.Shooter.setpointDeadband) {
+    if (Math.abs(this.setpoint - this.mechanismVelocityAv) <= Constants.Shooter.setpointDeadband) {
       return true;
     } else {
       return false;
