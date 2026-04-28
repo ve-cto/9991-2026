@@ -83,6 +83,10 @@ public final class Constants {
         public static final double setpointDeadband = 50;
     }
 
+    public static class Feeder {
+        public static final double kControlRatio = 1;
+    }
+
     public static class Loader {
         public static final double kLoadSpeed = 0.8;
     }
