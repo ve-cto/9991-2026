@@ -94,14 +94,14 @@ public class RobotContainer {
         // Warm up on-the-fly path generation
         CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
 
-        NamedCommands.registerCommand("PointToHub", new PointToHub(() -> 0.0, () -> 0.0, drivetrain, m_networkTablesIO));
         NamedCommands.registerCommand("ExtendIntake", m_intake.extendIntakeCommand());
         NamedCommands.registerCommand("RetractIntake", m_intake.retractIntakeCommand());
         NamedCommands.registerCommand("RunIntake", m_intake.runIntakeCommand());
+        NamedCommands.registerCommand("ReverseIntake", m_intake.reverseIntakeCommand());
         NamedCommands.registerCommand("RunShooter500", m_shooter.runRPMCommand(500));
         NamedCommands.registerCommand("RunShooter600", m_shooter.runRPMCommand(600));
         NamedCommands.registerCommand("RunShooter700", m_shooter.runRPMCommand(700));
-        NamedCommands.registerCommand("Feed", m_feeder.feedCommand());
+        NamedCommands.registerCommand("FeedShooter", m_feeder.feedCommand());
 
         // Bind the commands to the controller inputs.
         configureBindings();
@@ -197,14 +197,12 @@ public class RobotContainer {
         // #endregion Shooter
 
         // #region Vision
-        // driveJoystick.circle().whileTrue(
-        //     new DriveToApriltag(5, drivetrain, m_vision)
+        // driveJoystick.start().whileTrue(
+        //     new DriveToApriltag(10, drivetrain, m_vision)
         // );
         
-        // Points the robot towards the pose of the hub corresponding to the robots alliance.
+        // Point towards the hub.
         // driveJoystick.a().whileTrue(
-        //     // Blue hub (4.65, 4)
-        //     // Red hub (12, 4)
         //     new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO) 
         // );
 
@@ -218,7 +216,7 @@ public class RobotContainer {
         );
 
         // driveJoystick.a().and(() -> !m_networkTablesIO.isInOwnAllianceZone()).whileTrue(
-        //     new PointToAllianceFuel(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO).alongWith(m_shooter.runRPMCommand(800))
+        //     new PointToAllianceFuel(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO).alongWith(m_shooter.runRPMCommand(100))
         // );
         // #endregion Vision
 
