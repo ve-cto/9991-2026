@@ -39,6 +39,7 @@ import frc.robot.subsystems.Led;
 import frc.robot.subsystems.NetworkTablesIO;
 import frc.robot.subsystems.Shooter;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.DebugMotors;
 import frc.robot.subsystems.Vision;
@@ -70,6 +71,7 @@ public class RobotContainer {
     public final NetworkTablesIO m_networkTablesIO = new NetworkTablesIO();
     public final Vision m_vision = new Vision(drivetrain, m_networkTablesIO);
     private final Intake m_intake = new Intake();
+    private final Arm m_arm = new Arm();
     private final DebugMotors m_DebugMotors = new DebugMotors();
     private final Led m_led = new Led();
     private final Shooter m_shooter = new Shooter();
@@ -96,8 +98,8 @@ public class RobotContainer {
         // Warm up on-the-fly path generation
         CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
 
-        NamedCommands.registerCommand("ExtendIntake", m_intake.extendIntakeCommand());
-        NamedCommands.registerCommand("RetractIntake", m_intake.retractIntakeCommand());
+        NamedCommands.registerCommand("ExtendIntake", m_arm.extendIntakeCommand());
+        NamedCommands.registerCommand("RetractIntake", m_arm.retractIntakeCommand());
         NamedCommands.registerCommand("RunIntake", m_intake.runIntakeCommand());
         NamedCommands.registerCommand("ReverseIntake", m_intake.reverseIntakeCommand());
         NamedCommands.registerCommand("RunShooter500", m_shooter.runRPMCommand(500));
@@ -170,16 +172,10 @@ public class RobotContainer {
         RobotModeTriggers.disabled().and(() -> DriverStation.isEStopped()).whileTrue(m_led.estop().ignoringDisable(true));
         // #endregion LEDs
 
-        // #region Intake
         driveJoystick.leftBumper().whileTrue(
             m_intake.runIntakeCommand()
         );
 
-
-
-
-
-        // speed (-1 -> 1)
         driveJoystick.a().whileTrue(
             m_feeder.feedCommand(0.8)
         );
@@ -187,8 +183,11 @@ public class RobotContainer {
         // driveJoystick.povLeft().and(() -> m_shooter.isAtSetpoint()).whileTrue(
         //     m_feeder.feedCommand(0.8).alongWith(m_intake.runIntakeCommand())
         // );
+        // driveJoystick.povLeft().and(() -> m_shooter.isAtSetpoint()).negate().whileTrue(
+        //     m_feeder.feedCommand(-0.2) // If we aren't ready to shoot, try to move balls back to stop them from entering the shooter.
+        // );
         // driveJoystick.povLeft().whileTrue(
-        //     m_shooter.runRPMCommand(2800).alongWith(new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO))
+        //     m_shooter.runRPMCommand(3500).alongWith(new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO))
         // );
 
         driveJoystick.povLeft().whileTrue(
@@ -196,15 +195,13 @@ public class RobotContainer {
         );
 
         driveJoystick.povDown().whileTrue(
-            m_intake.moveArmCommand(-0.8)
+            m_arm.moveArmCommand(-0.7)
         );
 
         driveJoystick.povUp().whileTrue(
-            m_intake.moveArmCommand(0.8)
+            m_arm.moveArmCommand(0.7)
         );
-        // #endregion Intake
         
-        // #region Shooter
         // Run our shooter at a given rpm.
         // Set negative to run backwards.
         m_shooter.setDefaultCommand(
@@ -216,9 +213,7 @@ public class RobotContainer {
         driveJoystick.b().whileTrue(m_shooter.runRPMCommand(3000));
         
         // driveJoystick.x().and(() -> m_shooter.isAtSetpoint()).whileTrue(m_feeder.feedCommand());
-        // #endregion Shooter
 
-        // #region Vision
         // driveJoystick.start().whileTrue(
         //     new DriveToApriltag(10, drivetrain, m_vision)
         // );
@@ -240,8 +235,7 @@ public class RobotContainer {
         // driveJoystick.a().and(() -> !m_networkTablesIO.isInOwnAllianceZone()).whileTrue(
         //     new PointToAllianceFuel(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO).alongWith(m_shooter.runRPMCommand(100))
         // );
-        // #endregion Vision
-
+ 
         // #region DebugMotors
         // Forward
         // driveJoystick.povUp().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(3, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
