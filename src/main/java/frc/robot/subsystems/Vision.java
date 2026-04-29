@@ -111,7 +111,7 @@ public class Vision extends SubsystemBase {
                     }
                     
                     if (poseEstimate.isPresent()) {
-                        System.out.println("Feeding pose to drivetrain:" + poseEstimate.get().estimatedPose.toPose2d().toString());
+                        // System.out.println("Feeding pose to drivetrain:" + poseEstimate.get().estimatedPose.toPose2d().toString());
                         m_drivetrain.addVisionMeasurement(poseEstimate.get().estimatedPose.toPose2d(), result.getTimestampSeconds());
                     }
                 }
