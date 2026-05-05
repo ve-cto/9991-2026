@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -28,6 +29,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -36,6 +38,7 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.Constants;
+import frc.robot.commands.drive.PointToHub;
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
@@ -435,6 +438,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         );
     }
 
+    private final Pose2d blueHubPose = new Pose2d(4.65, 4, new Rotation2d());
+    private final Pose2d redHubPose = new Pose2d(12, 4, new Rotation2d());
+    private Pose2d m_hubPose = new Pose2d();
+
+    // public void pointToHub(boolean isRedAlliance, DoubleSupplier velX, DoubleSupplier velY, NetworkTablesIO networkTablesIO) {
+    //     this.pointToPose(this.m_hubPose, velX.getAsDouble(), velY.getAsDouble(), networkTablesIO);
+    // }
+
+    public void setHub(boolean isRedAlliance) {
+        try {
+            this.m_hubPose = isRedAlliance ? this.redHubPose : this.blueHubPose;
+        } catch (NullPointerException e) {
+            this.m_hubPose = this.redHubPose;
+        }
+    }
+
     public double getPointOffset() {
         double x = this.angleError;
         return x;
@@ -446,4 +465,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         boolean a = Math.abs(getPointOffset()) <= 0.35;
         return a;
     }
-}
+
+    public Command pointToHubCommand(boolean isRedAlliance, DoubleSupplier velX, DoubleSupplier velY, NetworkTablesIO networkTablesIO) {
+        // return run(() -> PointToHub(isRedAlliance, velX, velY, networkTablesIO));
+        return new FunctionalCommand(
+            () -> setHub(isRedAlliance), 
+            () -> this.pointToPose(this.m_hubPose, velX.getAsDouble(), velY.getAsDouble(), networkTablesIO), 
+            null, 
+            () -> false,
+            this);
+    }
+}  

@@ -131,6 +131,9 @@ public class Shooter extends SubsystemBase {
     this.run(this.closedLoopCalculatedOutput);
   }
 
+  /*
+   * stop
+   */
   public void stop() {
     this.isCommanded = false;
     m_shooterL.stopMotor();
@@ -146,6 +149,9 @@ public class Shooter extends SubsystemBase {
     m_shooterR.set(0);
   }
  
+  /*
+   * Returns whether the shooters' current RPM is within +-Constants.Shooter.setpointDeadband of the setpoint RPM  
+   */
   public boolean isAtSetpoint() {
     if (Math.abs(this.setpoint - this.mechanismVelocityHistoryAv) <= Constants.Shooter.setpointDeadband) {
       return true;
@@ -154,16 +160,26 @@ public class Shooter extends SubsystemBase {
     }
   }
 
+  /*
+   * Reset the shooter's PID controller and setpoint.
+   * Should be called on runRPM finish / interrupt.
+   */
   public void reset() {
     this.closedLoopCalculatedOutput = 0;
     kPidController.reset();
     this.setpoint = 0;
   }
 
+  /*
+   * Trigger for if the shooter is at it's RPM setpoint.
+   */
   public Trigger atSetpoint() {
     return new Trigger(() -> this.isAtSetpoint());
   }
 
+  /*
+   * Trigger for whether or not a non-zero control is given to the shooter motors.
+   */
   public Trigger isCommanded() {
     return new Trigger(() -> this.isCommanded);
   }
