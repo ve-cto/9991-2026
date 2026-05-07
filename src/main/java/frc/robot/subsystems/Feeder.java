@@ -19,6 +19,8 @@ import frc.robot.Constants;
 public class Feeder extends SubsystemBase {
   // private final TalonFX m_feederFX;
   private final WPI_VictorSPX m_feederSPX;
+
+  private double output;
   // private double mechanismVelocity;
   // private double setpoint;
   // private double motorVelocity;
@@ -47,21 +49,24 @@ public class Feeder extends SubsystemBase {
     //   SmartDashboard.putNumber("Feeder Setpoint", this.setpoint);
     //   SmartDashboard.putNumber("Feeder Output", this.closedLoopCalculatedOutput);
     // }
+    SmartDashboard.putNumber("feederOutput", this.output);
   }
 
   public void run(double speed) {
     // m_feederFX.set(speed);
+    this.output = speed;
     m_feederSPX.set(speed);
   }
 
   public void stop() {
     // m_feederFX.stopMotor();
+    this.output = 0;
     m_feederSPX.stopMotor();
   }
 
   public void coast() {
     // m_feederFX.set(0.0);
-    m_feederSPX.set(0.0);
+    this.run(0.0);
   }
 
   // public void runRPM(double rotationsPerMinute) {

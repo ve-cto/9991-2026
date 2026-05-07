@@ -263,6 +263,8 @@ public class Led extends SubsystemBase {
                     this.setStatus(Constants.Led.StatusList.AUTONOMOUS);
                 } else if (DriverStation.isTeleopEnabled()) {
                     this.setStatus(Constants.Led.StatusList.TELEOP);
+                } else if (DriverStation.isTestEnabled()) {
+                    this.setStatus(Constants.Led.StatusList.TELEOP);
                 }
             }
         }).ignoringDisable(true);
