@@ -79,9 +79,9 @@ public final class Constants {
     }
 
     public static class Shooter {
-        public static final double kControlRatio = (1.2); // Every 4 rotations of the motor, one rotation of the mechanism
+        public static final double kControlRatio = (1.0);
         public static final double kMaxOutput = 0.975; // Limit the maximum percentage output applied to the shooter motors to avoid overdraw
-        public static final double setpointDeadband = 50;
+        public static final double setpointDeadband = 100;
     }
 
     public static class Feeder {

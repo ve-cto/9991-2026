@@ -176,18 +176,28 @@ public class RobotContainer {
         );
 
         driveJoystick.a().whileTrue(
-            m_feeder.feedCommand(0.8)
+            m_feeder.feedCommand(0.95)
         );
 
         driveJoystick.povLeft().and(m_shooter.atSetpoint()).whileTrue(
-            m_feeder.feedCommand(0.8).alongWith(m_intake.runIntakeCommand())
+            m_feeder.feedCommand(0.95).alongWith(m_intake.runIntakeCommand())
         );
         driveJoystick.povLeft().and(m_shooter.atSetpoint()).negate().whileTrue(
+            m_feeder.feedCommand(-0.3) // If we aren't ready to shoot, try to move balls back to stop them from entering the shooter.
+        );
+        driveJoystick.povRight().and(m_shooter.atSetpoint()).whileTrue(
+            m_feeder.feedCommand(0.95).alongWith(m_intake.runIntakeCommand())
+        );
+        driveJoystick.povRight().and(m_shooter.atSetpoint()).negate().whileTrue(
             m_feeder.feedCommand(-0.3) // If we aren't ready to shoot, try to move balls back to stop them from entering the shooter.
         );
         driveJoystick.povLeft().whileTrue(
             m_shooter.runRPMCommand(3000).alongWith(drivetrain.pointToHubCommand(m_networkTablesIO.getAlliance(), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, m_networkTablesIO))
         );
+        driveJoystick.povRight().whileTrue(
+            m_shooter.runRPMCommand(3500)
+        );
+        RobotModeTriggers.test().whileTrue(m_shooter.updateMotorConfigsCommand());
 
         // driveJoystick.povLeft().whileTrue(
         //     m_shooter.runRPMCommand(3500).alongWith(new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)).alongWith(m_feeder.feedCommand(0.8)).alongWith(m_intake.runIntakeCommand())
@@ -207,7 +217,7 @@ public class RobotContainer {
             m_shooter.coastCommand()
         );
 
-        driveJoystick.x().whileTrue(m_shooter.runRPMCommand(3000));
+        driveJoystick.x().whileTrue(m_shooter.runDashboard());
         driveJoystick.y().whileTrue(m_shooter.runRPMCommand(3500));
         driveJoystick.b().whileTrue(m_shooter.runRPMCommand(4000));
         
@@ -235,7 +245,6 @@ public class RobotContainer {
         m_led.setDefaultCommand(m_led.handleDefault().ignoringDisable(true));
         
         m_shooter.atSetpoint().and(m_shooter.isCommanded()).whileTrue(m_led.display(Constants.Led.StatusList.ALIGNED));
-
 
         // If the robot is ESTOPPED, flash
         RobotModeTriggers.disabled().and(() -> DriverStation.isEStopped()).whileTrue(m_led.estop().ignoringDisable(true));
