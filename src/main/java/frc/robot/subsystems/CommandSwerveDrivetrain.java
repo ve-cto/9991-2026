@@ -466,13 +466,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return a;
     }
 
-    public Command pointToHubCommand(boolean isRedAlliance, DoubleSupplier velX, DoubleSupplier velY, NetworkTablesIO networkTablesIO) {
-        // return run(() -> PointToHub(isRedAlliance, velX, velY, networkTablesIO));
-        return new FunctionalCommand(
-            () -> setHub(isRedAlliance), 
-            () -> this.pointToPose(this.m_hubPose, velX.getAsDouble(), velY.getAsDouble(), networkTablesIO), 
-            null, 
-            () -> false,
-            this);
-    }
+    // public Command pointToHubCommand(boolean isRedAlliance, DoubleSupplier velX, DoubleSupplier velY, NetworkTablesIO networkTablesIO) {
+    //     // return run(() -> PointToHub(isRedAlliance, velX, velY, networkTablesIO));
+    //     return new FunctionalCommand(
+    //         () -> setHub(isRedAlliance), 
+    //         () -> this.pointToPose(this.m_hubPose, velX.getAsDouble(), velY.getAsDouble(), networkTablesIO), 
+    //         null, 
+    //         () -> false,
+    //         this);
+    // }
 }  

@@ -7,12 +7,15 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
@@ -42,6 +45,8 @@ public class Shooter extends SubsystemBase {
   private double kp;
   private double ki;
   private double kd;
+  private double ffslope;
+  private double ffoffset;
   private double shooterRRPM;
   private double mechanismVelocityAv;
   private double mechanismVelocityHistoryAv;
@@ -49,6 +54,9 @@ public class Shooter extends SubsystemBase {
   private double setpoint = 0;
   private double motorsVelocityAv;
   private Queue<Double> mechanismVelocityAvHistory = new ArrayBlockingQueue<>(10);
+  
+  private Slot0Configs slot0Configs = new Slot0Configs();
+  final VelocityVoltage m_request = new VelocityVoltage(0).withSlot(0);
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -58,9 +66,13 @@ public class Shooter extends SubsystemBase {
     // kPidController = new PIDController(0.0001, 0.0008, 0.0);
     kPidController = new PIDController(0, 0, 0);
 
-    SmartDashboard.putNumber("kp", 0.0003);
-    SmartDashboard.putNumber("ki", 0.001);
+    SmartDashboard.putNumber("kp", 0.2);
+    SmartDashboard.putNumber("ki", 0.0);
     SmartDashboard.putNumber("kd", 0);
+    SmartDashboard.putNumber("ffslope", 0.00195);
+    SmartDashboard.putNumber("ffoffset", 0);
+    SmartDashboard.putNumber("presetspeed", 3200);
+    this.updateMotorConfigs();
   }
 
   /*
@@ -68,7 +80,8 @@ public class Shooter extends SubsystemBase {
    */
   public double calculateFeedforward(double rotationsPerMinute) {
     // double ff = (0.000688 * rotationsPerMinute + 0.0052);
-    double ff = (0.000075* rotationsPerMinute + 0);
+    // double ff = (0.000075* rotationsPerMinute + 0);
+    double ff = (this.ffslope* rotationsPerMinute + this.ffoffset);
     return ff;
   }
 
@@ -97,6 +110,8 @@ public class Shooter extends SubsystemBase {
     this.kp = SmartDashboard.getNumber("kp", 0);
     this.ki = SmartDashboard.getNumber("ki", 0);
     this.kd = SmartDashboard.getNumber("kd", 0);
+    this.ffslope = SmartDashboard.getNumber("ffslope", 0);
+    this.ffoffset = SmartDashboard.getNumber("ffoffset", 0);
     
     this.kPidController.setPID(this.kp, this.ki, this.kd);
 
@@ -117,6 +132,19 @@ public class Shooter extends SubsystemBase {
    * Run the shooter towards a given speed measured in rotations per minute of the mechanism.
    * Closed-Loop controlled (PID) using the krakens onboard encoder.
    */
+  // public void runRPM(double rotationsPerMinute) {
+  //   this.isCommanded = true;
+  //   this.setpoint = rotationsPerMinute;
+  //   if (rotationsPerMinute * Constants.Shooter.kControlRatio >= Constants.Hardware.kMaxKrakenFreeSpeed) {
+  //     DriverStation.reportWarning(String.format("WARN: Shooter setpoint %s is greater than maximum attainable motor speed.", rotationsPerMinute), false);
+  //   }
+
+  //   double raw = kPidController.calculate(this.mechanismVelocityAv, rotationsPerMinute);
+  //   double feedforward = calculateFeedforward(rotationsPerMinute);
+
+  //   this.closedLoopCalculatedOutput = Math.min(Math.max(raw + feedforward, -Constants.Shooter.kMaxOutput), Constants.Shooter.kMaxOutput);
+  //   this.run(this.closedLoopCalculatedOutput);
+  // }
   public void runRPM(double rotationsPerMinute) {
     this.isCommanded = true;
     this.setpoint = rotationsPerMinute;
@@ -127,8 +155,20 @@ public class Shooter extends SubsystemBase {
     double raw = kPidController.calculate(this.mechanismVelocityAv, rotationsPerMinute);
     double feedforward = calculateFeedforward(rotationsPerMinute);
 
-    this.closedLoopCalculatedOutput = Math.min(Math.max(raw + feedforward, -Constants.Shooter.kMaxOutput), Constants.Shooter.kMaxOutput);
-    this.run(this.closedLoopCalculatedOutput);
+    m_shooterL.setControl(m_request.withVelocity(-rotationsPerMinute/60).withFeedForward(-feedforward));
+    m_shooterR.setControl(m_request.withVelocity(rotationsPerMinute/60).withFeedForward(feedforward));
+  }
+
+  public void updateMotorConfigs() {
+    slot0Configs.kP = SmartDashboard.getNumber("kp", 0);
+    slot0Configs.kI = SmartDashboard.getNumber("ki", 0);
+    slot0Configs.kD = SmartDashboard.getNumber("kd", 0);
+    m_shooterL.getConfigurator().apply(slot0Configs);
+    m_shooterR.getConfigurator().apply(slot0Configs);
+  }
+
+  public Command updateMotorConfigsCommand() {
+    return runOnce(() -> this.updateMotorConfigs());
   }
 
   /*
@@ -205,6 +245,17 @@ public class Shooter extends SubsystemBase {
       this                                         // requirements
     );
   }
+  
+  public Command runDashboard() {
+    return new FunctionalCommand(
+      () -> reset(),                // initialize
+      () -> runRPM(SmartDashboard.getNumber("presetspeed", 0)),                    // execute
+      interrupted -> reset(),                      // end (with interrupted flag)
+      () -> false,                                 // isFinished (never finishes on its own)
+      this                                         // requirements
+    );
+  }
+
 
   public Command brakeCommand() {
     return this.startEnd(() -> this.stop(), () -> this.coast());
