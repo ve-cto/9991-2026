@@ -139,9 +139,9 @@ public class RobotContainer {
         RobotModeTriggers.test().whileTrue(
             drivetrain.applyRequest(() -> swerveIdle).ignoringDisable(true)
         );
-        RobotModeTriggers.disabled().whileFalse(
-            null
-        );
+        // RobotModeTriggers.disabled().whileFalse(
+        //     null
+        // );
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -191,9 +191,9 @@ public class RobotContainer {
         driveJoystick.povRight().and(m_shooter.atSetpoint()).negate().whileTrue(
             m_feeder.feedCommand(-0.3) // If we aren't ready to shoot, try to move balls back to stop them from entering the shooter.
         );
-        driveJoystick.povLeft().whileTrue(
-            m_shooter.runRPMCommand(3000).alongWith(drivetrain.pointToHubCommand(m_networkTablesIO.getAlliance(), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, m_networkTablesIO))
-        );
+        // driveJoystick.povLeft().whileTrue(
+        //     m_shooter.runRPMCommand(3000).alongWith(drivetrain.pointToHubCommand(m_networkTablesIO.getAlliance(), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, m_networkTablesIO))
+        // );
         driveJoystick.povRight().whileTrue(
             m_shooter.runRPMCommand(3500)
         );
