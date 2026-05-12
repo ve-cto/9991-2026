@@ -15,6 +15,7 @@ public final class Constants {
         public static final int kShooterRId = 19; // kraken
         public static final int kFeederSPXId = 20;
         public static final int kFeederFXId = 21;
+        public static final int kHoodId = 25;
 
         // rev through bore encoder
         public static final int kArmEncoderAChannel = 2; // blue wire
