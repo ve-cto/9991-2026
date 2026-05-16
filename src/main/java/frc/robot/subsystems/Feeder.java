@@ -94,6 +94,10 @@ public class Feeder extends SubsystemBase {
     return startEnd(() -> this.run(speed), () -> this.coast());
   }
 
+  public Command coastCommand() {
+    return startEnd(() -> this.coast(), () -> this.coast());
+  }
+
   public Command feedCommand() {
     return startEnd(() -> this.run(Constants.Feeder.kFeedSpeed), () -> this.coast());
   }

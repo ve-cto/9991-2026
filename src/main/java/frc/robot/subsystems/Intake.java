@@ -63,6 +63,10 @@ public class Intake extends SubsystemBase {
         return this.startEnd(() -> this.run(speed), () -> this.stopIntake());
     }
 
+    public Command coastCommand() {
+        return this.run(() -> this.run(0.0));
+    }
+
     public void simulationInit() {}
 
     // these motors are already automatically simulated - you don't need to put anything in here buddy :]

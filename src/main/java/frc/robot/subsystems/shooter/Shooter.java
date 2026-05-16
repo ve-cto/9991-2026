@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -30,6 +31,7 @@ import frc.robot.Constants;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
   private final TalonFX m_shooterL;
@@ -117,6 +119,10 @@ public class Shooter extends SubsystemBase {
 
   }
 
+  public DoubleSupplier getMechanismVelocityAv() {
+    return () -> this.mechanismVelocityAv;
+  }
+
   /*
    * Run the shooter at a given output percentage.
    * Range (-1, 1)
@@ -127,6 +133,7 @@ public class Shooter extends SubsystemBase {
   }
 
   // Math.min(Math.max(value, min), max);
+
 
   /*
    * Run the shooter towards a given speed measured in rotations per minute of the mechanism.
@@ -145,7 +152,8 @@ public class Shooter extends SubsystemBase {
   //   this.closedLoopCalculatedOutput = Math.min(Math.max(raw + feedforward, -Constants.Shooter.kMaxOutput), Constants.Shooter.kMaxOutput);
   //   this.run(this.closedLoopCalculatedOutput);
   // }
-  public void runRPM(double rotationsPerMinute) {
+  public void runRPM(DoubleSupplier rpm) {
+    double rotationsPerMinute = rpm.getAsDouble();
     this.isCommanded = true;
     this.setpoint = rotationsPerMinute;
     if (rotationsPerMinute * Constants.Shooter.kControlRatio >= Constants.Hardware.kMaxKrakenFreeSpeed) {
@@ -178,6 +186,7 @@ public class Shooter extends SubsystemBase {
     this.isCommanded = false;
     m_shooterL.stopMotor();
     m_shooterR.stopMotor();
+    
   }
 
   /*
@@ -236,7 +245,7 @@ public class Shooter extends SubsystemBase {
    * Run the shooter towards a given speed measured in rotations per minute of the mechanism.
    * Closed-Loop controlled (PID) using the krakens onboard encoder.
    */
-  public Command runRPMCommand(double rpm) {
+  public Command runRPMCommand(DoubleSupplier rpm) {
     return new FunctionalCommand(
       () -> reset(),                // initialize
       () -> runRPM(rpm),                    // execute
@@ -249,13 +258,12 @@ public class Shooter extends SubsystemBase {
   public Command runDashboard() {
     return new FunctionalCommand(
       () -> reset(),                // initialize
-      () -> runRPM(SmartDashboard.getNumber("presetspeed", 0)),                    // execute
+      () -> runRPM(() -> SmartDashboard.getNumber("presetspeed", 0)),                    // execute
       interrupted -> reset(),                      // end (with interrupted flag)
       () -> false,                                 // isFinished (never finishes on its own)
       this                                         // requirements
     );
   }
-
 
   public Command brakeCommand() {
     return this.startEnd(() -> this.stop(), () -> this.coast());

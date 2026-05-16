@@ -86,3 +86,16 @@ public class DebugMotors extends SubsystemBase {
     }
   } // does nothing if id is out of range
 }
+
+// #region DebugMotors
+// Forward
+// driveJoystick.povUp().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(3, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+// driveJoystick.povRight().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(2, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+// driveJoystick.povDown().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(5, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+// driveJoystick.povLeft().and(driveJoystick.leftBumper().negate()).whileTrue(new RunDebugMotors(4, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+// Reverse
+// driveJoystick.povUp().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(3, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+// driveJoystick.povRight().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(2, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+// driveJoystick.povDown().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(5, () -> driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+// driveJoystick.povLeft().and(driveJoystick.leftBumper()).whileTrue(new RunDebugMotors(4, () -> -driveJoystick.getLeftTriggerAxis(), m_DebugMotors));
+// #endregion DebugMotors

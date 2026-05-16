@@ -15,12 +15,12 @@ public final class Constants {
         public static final int kShooterRId = 19; // kraken
         public static final int kFeederSPXId = 20;
         public static final int kFeederFXId = 21;
-        public static final int kHoodId = 25;
+        public static final int kHoodId = 22;
 
         // rev through bore encoder
-        public static final int kArmEncoderAChannel = 2; // blue wire
-        public static final int kArmEncoderBChannel = 3; // yellow(?) wire
-    
+        public static final int kArmEncoderAChannel = 4; // blue wire
+        public static final int kArmEncoderBChannel = 5; // yellow(?) wire
+
         public static final int kDebugMotor1 = 15;
         public static final int kDebugMotor2 = 99;
         public static final int kDebugMotor3 = 99;
@@ -70,12 +70,15 @@ public final class Constants {
         public static enum StatusList {
             DISCONNECT,
             DISABLED,
+            ESTOPPED,
+            BLANK,
             TELEOP,           
             AUTONOMOUS,
-            ALIGNED,        // Aligned to the hub?
-            UNALIGNED,
-            ESTOPPED,
-            BLANK
+            ALIGNED,
+            READY,
+            SHOOTING,
+            NOTREADY,
+            REVERSE
         }
     }
 
@@ -83,6 +86,20 @@ public final class Constants {
         public static final double kControlRatio = (1.0);
         public static final double kMaxOutput = 0.975; // Limit the maximum percentage output applied to the shooter motors to avoid overdraw
         public static final double setpointDeadband = 100;
+    }
+
+    public static class Hood {
+        public static final double kControlRatio = (1.0);
+        public static final double kMaxOutput = 0.1;
+
+
+        public static final double kAngleExtended = 30;
+        public static final double kAngleHomed = 90;
+        public static final double kCountExtended = 2;
+
+        public static final double kdefaultKp = 2;
+        public static final double kdefaultKi = 1;
+        public static final double kdefaultKd = 0;
     }
 
     public static class Feeder {

@@ -95,6 +95,10 @@ public class Arm extends SubsystemBase {
         return this.startEnd(() -> this.moveArm(speed), () -> this.stopArm());
     }
 
+    public Command coastCommand() {
+        return this.startEnd(() -> this.coastArm(), () -> this.coastArm());
+    }
+
     /*
      * extend the intake
      */
