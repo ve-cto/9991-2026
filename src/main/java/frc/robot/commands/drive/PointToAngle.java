@@ -8,38 +8,29 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.NetworkTablesIO;
 
-public class PointToHub extends Command {
+public class PointToAngle extends Command {
     private final CommandSwerveDrivetrain m_drivetrain;
-    private Pose2d m_targetPose;
-    private final NetworkTablesIO m_networkTablesIO;
     private final DoubleSupplier m_velX;
     private final DoubleSupplier m_velY;
-    private final Pose2d blueHubPose = new Pose2d(4.65, 4, new Rotation2d());
-    private final Pose2d redHubPose = new Pose2d(12, 4, new Rotation2d());
+    private final DoubleSupplier m_angle;
     // Blue hub (4.65, 4)
     // Red hub (12, 4)
 
-    public PointToHub(DoubleSupplier velX, DoubleSupplier velY, CommandSwerveDrivetrain drivetrain, NetworkTablesIO networkTablesIO) {
+    public PointToAngle(DoubleSupplier angle, DoubleSupplier velX, DoubleSupplier velY, CommandSwerveDrivetrain drivetrain) {
         this.m_drivetrain = drivetrain;
         this.m_velX = velX;
         this.m_velY = velY;
-        this.m_networkTablesIO = networkTablesIO;
+        this.m_angle = angle;
         
         addRequirements(drivetrain);
     }   
 
     @Override
-    public void initialize() {
-        if (this.m_networkTablesIO.getAlliance()) {
-            this.m_targetPose = redHubPose;
-        } else {
-            this.m_targetPose = blueHubPose;
-        }
-    }
+    public void initialize() {}
 
     @Override
     public void execute() {
-        m_drivetrain.pointToPose(m_targetPose, m_velX.getAsDouble(), m_velY.getAsDouble());
+        m_drivetrain.pointToAngle(new Rotation2d(m_angle.getAsDouble()), m_velX.getAsDouble(), m_velY.getAsDouble());
     }
 
     @Override

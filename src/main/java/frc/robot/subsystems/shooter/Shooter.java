@@ -132,7 +132,8 @@ public class Shooter extends SubsystemBase {
 
   public DoubleSupplier getLedProgressMark() {
     double lowerDB = 1000;
-    double upperDB = 1000;
+    double upperDB = 333;
+    // upperDB = (lowerDB - (ledMarkerPercentage * lowerDB)) / ledMarkerPercentage;
     return () -> {
       double diff = this.mechanismVelocityAv - this.setpoint;
       double normal = (diff + lowerDB) / (lowerDB + upperDB);

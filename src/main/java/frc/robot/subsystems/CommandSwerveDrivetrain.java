@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -20,6 +21,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -372,75 +374,110 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * 
      * @param pose The desired pose to drive towards
      */
-    public void driveToPose(Pose2d pose, NetworkTablesIO table) {
-        Pose2d currentPose = table.getNetworkPose();
-        Pose2d targetPose = pose;
+    // public void driveToPose(Pose2d pose, NetworkTablesIO table) {
+    //     Pose2d currentPose = table.getNetworkPose();
+    //     Pose2d targetPose = pose;
 
-        double[] calc = new double[2];
-        calc[0] = poseForwardPidController.calculate(currentPose.getX(), targetPose.getX());
-        calc[1] = poseStrafePidController.calculate(currentPose.getY(), targetPose.getY());
+    //     double[] calc = new double[2];
+    //     calc[0] = poseForwardPidController.calculate(currentPose.getX(), targetPose.getX());
+    //     calc[1] = poseStrafePidController.calculate(currentPose.getY(), targetPose.getY());
 
-        // max(lower_bound, min(upper_bound, value))
-        double[] map = {
-            Math.max(-1, Math.min(1, calc[0])),
-            Math.max(-1, Math.min(1, calc[1])),
-        };
+    //     // max(lower_bound, min(upper_bound, value))
+    //     double[] map = {
+    //         Math.max(-1, Math.min(1, calc[0])),
+    //         Math.max(-1, Math.min(1, calc[1])),
+    //     };
 
-        // If we're on blue we need to flip these.
-        // if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
-        //     map[0] = -map[0];
-        //     map[1] = -map[1];
-        // }
-        double velX = map[0] * MaxSpeed;
-        double velY = map[1] * MaxSpeed;
+    //     // If we're on blue we need to flip these.
+    //     // if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
+    //     //     map[0] = -map[0];
+    //     //     map[1] = -map[1];
+    //     // }
+    //     double velX = map[0] * MaxSpeed;
+    //     double velY = map[1] * MaxSpeed;
 
-        pointToPose(pose, velX, velY, table);
-    }
+    //     pointToPose(pose, velX, velY);
+    // }
 
 
     private double angleError = 0.0;
 
-    public void pointToPose(Pose2d pose, double velX, double velY, NetworkTablesIO table) {
-        Pose2d currentPose = table.getNetworkPose();
+    // public void pointToPose(Pose2d pose, double velX, double velY, NetworkTablesIO table) {
+    //     Pose2d currentPose = table.getNetworkPose();
         
-        double currentX = currentPose.getX();
-        double currentY = currentPose.getY();
+    //     double currentX = currentPose.getX();
+    //     double currentY = currentPose.getY();
         
-        Pose2d targetPose = pose;
-        double targetX = targetPose.getX();
-        double targetY = targetPose.getY();
+    //     Pose2d targetPose = pose;
+    //     double targetX = targetPose.getX();
+    //     double targetY = targetPose.getY();
 
-        double targetXRelative = targetX - currentX;
-        double targetYRelative = targetY - currentY;
+    //     double targetXRelative = targetX - currentX;
+    //     double targetYRelative = targetY - currentY;
 
-        double theta = Math.atan2(targetYRelative, targetXRelative);
-        Rotation2d targetRotation2d = new Rotation2d(theta);
-        SmartDashboard.putNumber("Theta", theta);
+    //     double theta = Math.atan2(targetYRelative, targetXRelative);
+    //     Rotation2d targetRotation2d = new Rotation2d(theta);
+    //     SmartDashboard.putNumber("Theta", theta);
 
-        // Rotation2d targetRotation2d = Math.sqrt(targetPose.getX() * targetPose.getX() + targetPose.getY() * targetPose.getY()) > 0.01 ? new Rotation2d(targetPose.getY(), targetPose.getX()) : currentPose.getRotation();
+    //     // Rotation2d targetRotation2d = Math.sqrt(targetPose.getX() * targetPose.getX() + targetPose.getY() * targetPose.getY()) > 0.01 ? new Rotation2d(targetPose.getY(), targetPose.getX()) : currentPose.getRotation();
     
-        // Rotation2d rotError = targetRotation2d.minus(currentPose.getRotation());
-        Rotation2d rotError = currentPose.getRotation().minus(targetRotation2d);
-        this.angleError = rotError.getRadians();
-        SmartDashboard.putNumber("Angle Error", this.angleError);
+    //     // Rotation2d rotError = targetRotation2d.minus(currentPose.getRotation());
+    //     Rotation2d rotError = currentPose.getRotation().minus(targetRotation2d);
+    //     this.angleError = rotError.getRadians();
+    //     // SmartDashboard.putNumber("Angle Error", this.angleError);
 
-        double calc = pointRotationPidController.calculate(0.0, angleError);
-        SmartDashboard.putNumber("Calculated Output", calc);
+    //     double calc = pointRotationPidController.calculate(0.0, angleError);
+    //     // SmartDashboard.putNumber("Calculated Output", calc);
 
-        double minmax = Math.max(-0.8, Math.min(0.8, calc));
+    //     double minmax = Math.max(-0.8, Math.min(0.8, calc));
 
-        double rot = -minmax * MaxAngularRate;
+    //     double rot = -minmax * MaxAngularRate;
 
+    //     this.setControl(
+    //         drive.withVelocityX(velX)
+    //             .withVelocityY(velY)
+    //             .withRotationalRate(rot)
+    //     );
+    // }
+
+    private final SwerveRequest.FieldCentricFacingAngle point = new SwerveRequest.FieldCentricFacingAngle()
+        .withDeadband(MaxSpeed * Constants.Swerve.kDeadbandFraction)
+        .withRotationalDeadband(0.0) // Add a `% deadband
+        .withDriveRequestType(DriveRequestType.Velocity); // Use closed-loop control for drive motors
+
+
+    private PhoenixPIDController m_thetaController; 
+    {
+    m_thetaController = new PhoenixPIDController(8.0, 0.0, 0.0);
+    m_thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    point.HeadingController = m_thetaController;
+    }
+
+    public void pointToPose(Pose2d targetPose, double velX, double velY) {
+        Pose2d curPose = this.getState().Pose;
+        Translation2d targetPoseRelative = targetPose.getTranslation().minus(curPose.getTranslation());
+        Rotation2d targetRotationRelative = new Rotation2d(Math.atan2(-targetPoseRelative.getY(), -targetPoseRelative.getX()));
+        // Rotation2d rotError = curPose.getRotation().minus(targetRotationRelative);
+        // SmartDashboard.putNumber("rotError", rotError.getDegrees());
+        SmartDashboard.putNumber("targetRotationRel", targetRotationRelative.getDegrees());
         this.setControl(
-            drive.withVelocityX(velX)
-                .withVelocityY(velY)
-                .withRotationalRate(rot)
+            point.withVelocityX(velX)
+            .withVelocityY(velY)
+            .withTargetDirection(targetRotationRelative)
         );
     }
 
     private final Pose2d blueHubPose = new Pose2d(4.65, 4, new Rotation2d());
     private final Pose2d redHubPose = new Pose2d(12, 4, new Rotation2d());
     private Pose2d m_hubPose = new Pose2d();
+
+    public void pointToAngle(Rotation2d angleDegrees, double velX, double velY) {
+        this.setControl(
+            point.withVelocityX(velX)
+            .withVelocityY(velY)
+            .withTargetDirection(angleDegrees)
+        );
+    }
 
     // public void pointToHub(boolean isRedAlliance, DoubleSupplier velX, DoubleSupplier velY, NetworkTablesIO networkTablesIO) {
     //     this.pointToPose(this.m_hubPose, velX.getAsDouble(), velY.getAsDouble(), networkTablesIO);

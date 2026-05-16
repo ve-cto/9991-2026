@@ -74,9 +74,12 @@ public class Led extends SubsystemBase {
     private LEDPattern progressMask2 = LEDPattern.progressMaskLayer(() -> progressVar2);
     private LEDPattern progressMask3 = LEDPattern.progressMaskLayer(() -> progressVar3);
 
-    private LEDPattern topBottomBorderBase = LEDPattern.steps(Map.of(0, Color.kRed, 0.05, Color.kBlack, 0.49, Color.kGreen, 0.51, Color.kBlack));
-    private LEDPattern pShooterSetpointBase = LEDPattern.solid(Color.kMediumTurquoise).atBrightness(Percent.of(100));
-    private LEDPattern pShooterSetpoint = topBottomBorderBase.overlayOn(pShooterSetpointBase.mask(progressMask1));
+    private LEDPattern pSetpointMarker = LEDPattern.steps(Map.of(0, Color.kBlack, 0.74, Color.kLime, 0.76, Color.kBlack));
+    private LEDPattern pSetpointBottomGradient = LEDPattern.gradient(GradientType.kDiscontinuous, Color.kRed, Color.kBlack, Color.kBlack, Color.kBlack, Color.kBlack, Color.kBlack, Color.kBlack);
+
+    private LEDPattern pShooterSetpointBase = LEDPattern.solid(Color.kGold).atBrightness(Percent.of(100));
+    
+    private LEDPattern pShooterSetpoint = pSetpointMarker.overlayOn(pSetpointBottomGradient.overlayOn(pShooterSetpointBase.mask(progressMask1)));
 
     // ready
     // shooting - progressmask for shooter setpoint +- 200? red at bottom green at top?
