@@ -18,6 +18,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -74,6 +75,12 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("ffslope", 0.00195);
     SmartDashboard.putNumber("ffoffset", 0);
     SmartDashboard.putNumber("presetspeed", 3200);
+
+    if (RobotBase.isSimulation()) {
+      SmartDashboard.putNumber("kp", 0.5);
+      SmartDashboard.putNumber("ki", 0.5);
+      SmartDashboard.putNumber("kd", 0);
+    }
     this.updateMotorConfigs();
   }
 
@@ -121,6 +128,16 @@ public class Shooter extends SubsystemBase {
 
   public DoubleSupplier getMechanismVelocityAv() {
     return () -> this.mechanismVelocityAv;
+  }
+
+  public DoubleSupplier getLedProgressMark() {
+    double lowerDB = 1000;
+    double upperDB = 1000;
+    return () -> {
+      double diff = this.mechanismVelocityAv - this.setpoint;
+      double normal = (diff + lowerDB) / (lowerDB + upperDB);
+      return normal;
+    };
   }
 
   /*
@@ -177,6 +194,10 @@ public class Shooter extends SubsystemBase {
 
   public Command updateMotorConfigsCommand() {
     return runOnce(() -> this.updateMotorConfigs());
+  }
+
+  public double getSetpoint() {
+    return this.setpoint;
   }
 
   /*

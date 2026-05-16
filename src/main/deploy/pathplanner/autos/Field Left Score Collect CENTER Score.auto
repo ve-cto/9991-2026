@@ -5,32 +5,63 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "Field Left to Hub"
-          }
-        },
-        {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "PLACEHOLDER Shoot"
+                  "pathName": "Field Left to Hub"
                 }
               },
               {
-                "type": "wait",
+                "type": "named",
                 "data": {
-                  "waitTime": 3.0
+                  "name": "HoodHub"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShooterHub"
                 }
               }
             ]
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 2.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "HoodHub"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShooterHub"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Feed"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -44,12 +75,24 @@
                 "data": {
                   "name": "ExtendIntake"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "HomeHood"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShooterStop"
+                }
               }
             ]
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -63,45 +106,95 @@
                 "data": {
                   "name": "RunIntake"
                 }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 1.0
-                }
               }
             ]
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Center Fuel Field Left to Hub"
-          }
-        },
-        {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "PLACEHOLDER Shoot"
+                  "pathName": "Center Fuel Field Left to Hub"
                 }
               },
               {
-                "type": "wait",
+                "type": "named",
                 "data": {
-                  "waitTime": 3.0
+                  "name": "HoodHub"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShooterHub"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "RetractIntake"
                 }
               }
             ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "Hub to Field Left"
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 2.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShooterHub"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "HoodHub"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Feed"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Hub to Field Left"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "HomeHood"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShooterStop"
+                }
+              }
+            ]
           }
         }
       ]

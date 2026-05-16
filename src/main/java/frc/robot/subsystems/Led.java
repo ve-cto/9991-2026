@@ -67,11 +67,14 @@ public class Led extends SubsystemBase {
     private double progressVar1 = 0;
     private double progressVar2 = 0;
     private double progressVar3 = 0;
+    private java.util.function.DoubleSupplier progressSup1 = () -> 0.0;
+    private java.util.function.DoubleSupplier progressSup2 = () -> 0.0;
+    private java.util.function.DoubleSupplier progressSup3 = () -> 0.0;
     private LEDPattern progressMask1 = LEDPattern.progressMaskLayer(() -> progressVar1);
-    private LEDPattern progressMask2 = LEDPattern.progressMaskLayer(() -> progressVar1);
-    private LEDPattern progressMask3 = LEDPattern.progressMaskLayer(() -> progressVar1);
+    private LEDPattern progressMask2 = LEDPattern.progressMaskLayer(() -> progressVar2);
+    private LEDPattern progressMask3 = LEDPattern.progressMaskLayer(() -> progressVar3);
 
-    private LEDPattern topBottomBorderBase = LEDPattern.steps(Map.of(0, Color.kRed, 0.1, Color.kBlack, 0.9, Color.kRed));
+    private LEDPattern topBottomBorderBase = LEDPattern.steps(Map.of(0, Color.kRed, 0.05, Color.kBlack, 0.49, Color.kGreen, 0.51, Color.kBlack));
     private LEDPattern pShooterSetpointBase = LEDPattern.solid(Color.kMediumTurquoise).atBrightness(Percent.of(100));
     private LEDPattern pShooterSetpoint = topBottomBorderBase.overlayOn(pShooterSetpointBase.mask(progressMask1));
 
@@ -81,19 +84,33 @@ public class Led extends SubsystemBase {
 
     // LEDPattern sycned = base.synchronizedBlink(RobotController::getRSLState);
 
-    public void setProgressVar(int id, double progress) {
-        this.progressVar1 = (id == 1) ? progress : this.progressVar1;
-        this.progressVar2 = (id == 2) ? progress : this.progressVar2;
-        this.progressVar3 = (id == 3) ? progress : this.progressVar3;
+    public void setProgressVar(int id, DoubleSupplier prog) {
+        // store the supplier so the progress value can be updated continuously
+        if (id == 1) {
+            this.progressSup1 = prog;
+            this.progressVar1 = prog.getAsDouble();
+        } else if (id == 2) {
+            this.progressSup2 = prog;
+            this.progressVar2 = prog.getAsDouble();
+        } else if (id == 3) {
+            this.progressSup3 = prog;
+            this.progressVar3 = prog.getAsDouble();
+        }
     }
 
     public Command setProgressVarCommand(int id, DoubleSupplier progress) {
-        return runOnce(() -> this.setProgressVar(id, progress.getAsDouble()));
+        return runOnce(() -> this.setProgressVar(id, progress));
     }
 
     public Command displayShooterSepoint(DoubleSupplier progress) {
-        return new FunctionalCommand(() -> setStatus(Constants.Led.StatusList.SHOOTING), setProgressVar(1, progress.getAsDouble()), null, () -> false, this);
+        return new FunctionalCommand(() -> setProgressVar(1, progress), () -> setStatus(Constants.Led.StatusList.SHOOTING), interrupted -> nothing(), () -> false, this);
     }
+
+    public void nothing() {}
+
+    // public Command blank() {
+    //     return new FunctionalCommand(null, null, null, null, null);
+    // }
     
     // private double progressVar2 = 0;
     // private double progressVar3 = 0;
@@ -113,6 +130,19 @@ public class Led extends SubsystemBase {
     }
 
     public void periodic() {
+        // update progress vars from their suppliers so progress masks reflect live values
+        try {
+            this.progressVar1 = this.progressSup1.getAsDouble();
+        } catch (Exception e) {
+            // keep previous value on error
+        }
+        try {
+            this.progressVar2 = this.progressSup2.getAsDouble();
+        } catch (Exception e) {}
+        try {
+            this.progressVar3 = this.progressSup3.getAsDouble();
+        } catch (Exception e) {}
+
         updateFlashing();
         try {
                 switch (this.Status) {

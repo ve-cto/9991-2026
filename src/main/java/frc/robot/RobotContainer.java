@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 // Pathplanner and Poses
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,12 +21,16 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import static edu.wpi.first.units.Units.*;
+
+import java.lang.annotation.Retention;
+
 // Command Setup and Controllers
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.Commands;
 // Commands
 import frc.robot.commands.drive.DriveToApriltag;
 import frc.robot.commands.drive.DriveToPose;
@@ -95,6 +100,16 @@ public class RobotContainer {
     // #endregion Misc
     
     public RobotContainer() {
+        NamedCommands.registerCommand("ExtendIntake", m_arm.extendIntakeCommand());
+        NamedCommands.registerCommand("RetractIntake", m_arm.retractIntakeCommand());
+        NamedCommands.registerCommand("RunIntake", m_intake.runIntakeCommand());
+        NamedCommands.registerCommand("ReverseIntake", m_intake.reverseIntakeCommand());
+        NamedCommands.registerCommand("HoodHub", m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleHub()));
+        NamedCommands.registerCommand("ShooterHub", m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub()));
+        NamedCommands.registerCommand("Feed", m_feeder.feedCommand());
+        NamedCommands.registerCommand("ShooterStop", m_shooter.coastCommand());
+        NamedCommands.registerCommand("HomeHood", m_hood.resetHomeCommand());
+
         // Create our auto chooser
         // Pathplanner autos get populated into it automatically
         autoChooser = AutoBuilder.buildAutoChooser();
@@ -102,15 +117,6 @@ public class RobotContainer {
         
         // Warm up on-the-fly path generation
         CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
-
-        NamedCommands.registerCommand("ExtendIntake", m_arm.extendIntakeCommand());
-        NamedCommands.registerCommand("RetractIntake", m_arm.retractIntakeCommand());
-        NamedCommands.registerCommand("RunIntake", m_intake.runIntakeCommand());
-        NamedCommands.registerCommand("ReverseIntake", m_intake.reverseIntakeCommand());
-        NamedCommands.registerCommand("RunShooter500", m_shooter.runRPMCommand(() -> 500));
-        NamedCommands.registerCommand("RunShooter600", m_shooter.runRPMCommand(() -> 600));
-        NamedCommands.registerCommand("RunShooter700", m_shooter.runRPMCommand(() -> 700));
-        NamedCommands.registerCommand("FeedShooter", m_feeder.feedCommand());
 
         // Bind the commands to the controller inputs.
         configureBindings();
@@ -251,23 +257,40 @@ public class RobotContainer {
         driveJoystick.b().whileTrue(m_hood.runCommand(1.0));
         driveJoystick.y().whileTrue(m_hood.runCommand(-1.0));
         driveJoystick.x().whileTrue(m_hood.gotoPercentageCommand(() -> 1.0));
-        driveJoystick.a().whileTrue(m_hood.resetHomeCommand());
+        // driveJoystick.a().whileTrue(m_hood.resetHomeCommand());
         m_hood.setDefaultCommand(m_hood.brakeCommand());
 
         driveJoystick.povRight().whileTrue(
             new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)    
             .alongWith(
                 m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub())
-            ).alongWith(
+            )
+            .alongWith(
                 m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleHub())
-            ).alongWith(
+            )
+            .alongWith(
                 m_intake.runIntakeCommand()
-            ).alongWith(
-                m_feeder.feedCommand()
-            ).alongWith(
-                m_led.setProgressVarCommand(1, m_shooter.getMechanismVelocityAv())
+            )
+            .alongWith(
+                m_led.displayShooterSepoint(m_shooter.getLedProgressMark())
             )
         );
+        driveJoystick.a().whileTrue(m_feeder.feedCommand());
+
+        // driveJoystick.a().whileTrue(
+        //     Commands.runEnd(
+        //         () -> driveJoystick.setRumble(RumbleType.kBothRumble, 1.0),
+        //         () -> driveJoystick.setRumble(RumbleType.kBothRumble, 0.0)
+        //     )
+        // );
+
+        // m_shooter.atSetpoint().and(m_shooter.isCommanded()).whileTrue(
+        //     m_led.display(Constants.Led.StatusList.ALIGNED)
+        // );
+
+        // driveJoystick.povRight().whileTrue(
+        //     m_led.display(Constants.Led.StatusList.SHOOTING)
+        // );
 
         driveJoystick.povLeft().whileTrue(
             m_hood.gotoPercentageCommand(() -> 1.0)
@@ -298,7 +321,6 @@ public class RobotContainer {
         // );
 
         // #region LEDs
-        m_shooter.atSetpoint().and(m_shooter.isCommanded()).whileTrue(m_led.display(Constants.Led.StatusList.ALIGNED));
         // If the robot is ESTOPPED, flash
         RobotModeTriggers.disabled().and(() -> DriverStation.isEStopped()).whileTrue(m_led.estop().ignoringDisable(true));
         // #endregion LEDs
