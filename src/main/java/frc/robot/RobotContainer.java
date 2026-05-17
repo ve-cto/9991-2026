@@ -20,6 +20,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+
 import static edu.wpi.first.units.Units.*;
 
 import java.lang.annotation.Retention;
@@ -39,6 +41,7 @@ import frc.robot.commands.drive.PointToAngle;
 // import frc.robot.commands.drive.PointToPose;
 import frc.robot.commands.RunDebugMotors;
 // import frc.robot.commands.drive.PointToAllianceFuel;
+import frc.robot.commands.CustomShot;
 // Subsystems
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Led;
@@ -262,14 +265,15 @@ public class RobotContainer {
         m_hood.setDefaultCommand(m_hood.brakeCommand());
 
         driveJoystick.povRight().whileTrue(
-            new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)    
-            // new PointToAngle(m_trajectoryCalculator.SOTMgetRequiredRobotRotationHub(() -> drivetrain.getState().Speeds.vxMetersPerSecond, () -> drivetrain.getState().Speeds.vxMetersPerSecond, () -> drivetrain.getState().Pose.getRotation().getRadians()), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain)
-            .alongWith(
-                m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub())
-            )
-            .alongWith(
-                m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleHub())
-            )
+            // new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)    
+            // new PointToAngle(m_trajectoryCalculator.SOTMgetRequiredRobotRotationHub(() -> drivetrain.getState().Speeds.vxMetersPerSecond, () -> drivetrain.getState().Speeds.vyMetersPerSecond, () -> drivetrain.getState().Pose.getRotation().getRadians()), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain)
+            new CustomShot(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, new Pose2d(new Translation2d(1, 1), new Rotation2d()), 50, 1, 5, 1, m_shooter, m_hood, m_trajectoryCalculator, drivetrain)
+            // .alongWith(
+            //     m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub())
+            // )
+            // .alongWith(
+            //     m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleHub())
+            // )
             .alongWith(
                 m_intake.runIntakeCommand()
             )
@@ -277,7 +281,16 @@ public class RobotContainer {
                 m_led.displayShooterSepoint(m_shooter.getLedProgressMark())
             )
         );
-        driveJoystick.a().whileTrue(m_feeder.feedCommand());
+        // driveJoystick.a().whileTrue(m_feeder.feedCommand());
+
+
+        // driveJoystick.a().whileTrue(
+        //     Commands.runEnd(() -> m_trajectoryCalculator.getRequiredSOTMInfo(() -> drivetrain.getState().Speeds.vxMetersPerSecond, () -> drivetrain.getState().Speeds.vyMetersPerSecond),  () -> m_trajectoryCalculator.nothing(), m_feeder)
+        // );
+
+        // driveJoystick.a().whileTrue(
+        //     Commands.runEnd(() -> , null, null);
+        // );
 
         // driveJoystick.a().whileTrue(
         //     Commands.runEnd(

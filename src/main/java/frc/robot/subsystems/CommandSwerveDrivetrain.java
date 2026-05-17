@@ -471,11 +471,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final Pose2d redHubPose = new Pose2d(12, 4, new Rotation2d());
     private Pose2d m_hubPose = new Pose2d();
 
-    public void pointToAngle(Rotation2d angleDegrees, double velX, double velY) {
+    public void pointToAngle(Rotation2d angle, double velX, double velY) {
         this.setControl(
             point.withVelocityX(velX)
             .withVelocityY(velY)
-            .withTargetDirection(angleDegrees)
+            .withTargetDirection(angle)
         );
     }
 
