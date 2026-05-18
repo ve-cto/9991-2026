@@ -262,10 +262,11 @@ public class RobotContainer {
         m_hood.setDefaultCommand(m_hood.brakeCommand());
 
         driveJoystick.povRight().whileTrue(
-            new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)    
-            // new PointToAngle(m_trajectoryCalculator.SOTMgetRequiredRobotRotationHub(() -> drivetrain.getState().Speeds.vxMetersPerSecond, () -> drivetrain.getState().Speeds.vxMetersPerSecond, () -> drivetrain.getState().Pose.getRotation().getRadians()), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain)
+            // new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)    
+            new PointToAngle(m_trajectoryCalculator.getRequiredRobotAngleSOTM(drivetrain.getState()), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain)
             .alongWith(
-                m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub())
+                // m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub())
+                m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedSOTM(drivetrain.getState()))
             )
             .alongWith(
                 m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleHub())

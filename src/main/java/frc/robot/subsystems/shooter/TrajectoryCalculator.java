@@ -2,6 +2,8 @@ package frc.robot.subsystems.shooter;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -72,36 +74,98 @@ public class TrajectoryCalculator extends SubsystemBase {
         }
     }
 
+    public DoubleSupplier getRequiredRobotAngleSOTM(SwerveDriveState state) {
+        return () -> this.getRequiredSpeedsSOTM(state)[1];
+    }
+
+    public DoubleSupplier getRequiredShooterSpeedSOTM(SwerveDriveState state) {
+        return () -> this.getRequiredSpeedsSOTM(state)[0];
+    }
 
     // // https://blog.eeshwark.com/robotblog/shooting-on-the-fly
     // // https://blog.eeshwark.com/robotblog/shooting-on-the-fly-pt2
     // Note to me: i started looking at this and it is literally just vector math. All those questions where it's like a boat can go x speed, but there's a current going x speed in alpha direction. It's pretty much just that. It's HARD though. like, really hard.
-    // public double[] getRequiredSpeedsSOTM(double robotVelX, double robotVelY) {
-    //     Translation2d robotTranslation2d = networkTablesIO.getNetworkPose().getTranslation();
-    //     Translation2d hubTranslation2d = isRedAlliance ? redHubPose.getTranslation() : blueHubPose.getTranslation();
+    public double[] getRequiredSpeedsSOTM(SwerveDriveState state) {
+        Translation2d robotTranslation2d = networkTablesIO.getNetworkPose().getTranslation();
+        double robotHeadingRadians = networkTablesIO.getNetworkPose().getRotation().getRadians();
+        Translation2d hubTranslation2d = isRedAlliance ? redHubPose.getTranslation() : blueHubPose.getTranslation();
         
-    //     double targetX = hubTranslation2d.getX() - robotTranslation2d.getX();
-    //     double targetY = hubTranslation2d.getY() - robotTranslation2d.getY();
-    //     Translation2d targetPosition = new Translation2d(targetX, targetY);
+        double robotVelX = state.Speeds.vxMetersPerSecond;
+        double robotVelY = state.Speeds.vyMetersPerSecond;
+        // convert velocity into robot centric
+        double velXField = Math.cos(robotHeadingRadians) * robotVelX;
+        double velYField = Math.sin(robotHeadingRadians) * robotVelY;
+
+
+        double targetXRelative = hubTranslation2d.getX() - robotTranslation2d.getX();
+        double targetYRelative = hubTranslation2d.getY() - robotTranslation2d.getY();
+        Translation2d targetPositionRelative = new Translation2d(targetXRelative, targetYRelative);
         
-    //     // since we are working in robot relative (that's why we subtracted the robot position earlier), the robot pose becomes the origin
-    //     double distance = targetPosition.getNorm();
+        Translation2d shotVectorRelative = new Translation2d(targetXRelative - velXField, targetYRelative - velYField);
+        double distanceToShot = shotVectorRelative.getNorm();
+        double angleToShotRadians = Math.atan(shotVectorRelative.getY() / shotVectorRelative.getX());
 
-    //     // split the speeds into components. this really needs to be as instantaneous velocity OUT of the shooter though.
-    //     double horizontalSpeedIdeal = getRequiredShooterSpeed(new Pose2d(targetPosition, new Rotation2d())) * Math.cos(getRequiredHoodAngle(new Pose2d(targetPosition, new Rotation2d())));
-    //     double verticalSpeedIdeal = getRequiredShooterSpeed(new Pose2d(targetPosition, new Rotation2d())) * Math.sin(getRequiredHoodAngle(new Pose2d(targetPosition, new Rotation2d())));
+        int quadrant = 0;
+        if (targetXRelative >= 0 && targetYRelative >= 0) {
+            // goal is up right
+            quadrant = 1;
+        } else if (targetXRelative >= 0 && targetYRelative <= 0) {
+            // goal is down right
+            quadrant = 4;
+        } else if (targetXRelative <= 0 && targetYRelative >= 0) {
+            // goal is up left
+            quadrant = 2;
+        } else if (targetXRelative <= 0 && targetYRelative <= 0) {
+            // goal is down left 
+            quadrant = 3;
+        }
+        // catch broken
+        // if (quadrant == 0) {
+        //     quadrant = 1;
+        // }
 
-    //     Translation2d targetVector = targetPosition.div(distance).times(horizontalSpeedIdeal);
+        if (quadrant == 1) {
+            angleToShotRadians = angleToShotRadians; //unchanged
+        }
+        if (quadrant == 2) {
+            angleToShotRadians = Math.PI - angleToShotRadians;
+        }
+        if (quadrant == 3) {
+            angleToShotRadians = Math.PI + angleToShotRadians;
+        }
+        if (quadrant == 4) {
+            angleToShotRadians = -angleToShotRadians;
+        }
+        double angleToShotDegrees = angleToShotRadians * (180/Math.PI);
 
-    //     Translation2d robotVelocity = new Translation2d(robotVelX, robotVelY);
+        if (angleToShotDegrees >= 180) {
+            // put the angle into -180 to 180 space
+            angleToShotDegrees = angleToShotDegrees - 360;
+        }
 
-    //     Translation2d shotVector = targetVector.minus(robotVelocity);
+        return new double[] {distanceToShot, angleToShotDegrees};
+        
 
-    //     double requiredRobotAngle = shotVector.getAngle().getDegrees();
-    //     double requiredSpeed = shotVector.getNorm();
+        // if (quadrant ==)
 
-    //     return null;
-    // }
+        // since we are working in robot relative (that's why we subtracted the robot position earlier), the robot pose becomes the origin
+        // double distance = targetPositionRelative.getNorm();
+
+        // // split the speeds into components. this really needs to be as instantaneous velocity OUT of the shooter though.
+        // double horizontalSpeedIdeal = getRequiredShooterSpeed(new Pose2d(targetPositionRelative, new Rotation2d())) * Math.cos(getRequiredHoodAngle(new Pose2d(targetPositionRelative, new Rotation2d())));
+        // double verticalSpeedIdeal = getRequiredShooterSpeed(new Pose2d(targetPositionRelative, new Rotation2d())) * Math.sin(getRequiredHoodAngle(new Pose2d(targetPositionRelative, new Rotation2d())));
+
+        // Translation2d targetVector = targetPositionRelative.div(distance).times(horizontalSpeedIdeal);
+
+        // Translation2d robotVelocity = new Translation2d(robotVelX, robotVelY);
+
+        // Translation2d shotVector = targetVector.minus(robotVelocity);
+
+        // double requiredRobotAngle = shotVector.getAngle().getDegrees();
+        // double requiredSpeed = shotVector.getNorm();
+
+        // return null;
+    }
     
     // public DoubleSupplier SOTMgetRequiredRobotRotationHub(DoubleSupplier robotVelX, DoubleSupplier robotVelY, DoubleSupplier heading) {
     //     return () -> {
