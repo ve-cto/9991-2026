@@ -17,6 +17,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -60,6 +62,9 @@ public class Shooter extends SubsystemBase {
   
   private Slot0Configs slot0Configs = new Slot0Configs();
   final VelocityVoltage m_request = new VelocityVoltage(0).withSlot(0);
+
+  Alert alertSetBeyondMaximumSpeed = new Alert("Shooter setpoint is above maximum attainable speed, reducing.", AlertType.kWarning);
+
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -123,7 +128,6 @@ public class Shooter extends SubsystemBase {
     this.ffoffset = SmartDashboard.getNumber("ffoffset", 0);
     
     this.kPidController.setPID(this.kp, this.ki, this.kd);
-
   }
 
   public DoubleSupplier getMechanismVelocityAv() {
@@ -175,7 +179,11 @@ public class Shooter extends SubsystemBase {
     this.isCommanded = true;
     this.setpoint = rotationsPerMinute;
     if (rotationsPerMinute * Constants.Shooter.kControlRatio >= Constants.Hardware.kMaxKrakenFreeSpeed) {
-      DriverStation.reportWarning(String.format("WARN: Shooter setpoint %s is greater than maximum attainable motor speed.", rotationsPerMinute), false);
+      // DriverStation.reportWarning(String.format("WARN: Shooter setpoint %s is greater than maximum attainable motor speed.", rotationsPerMinute), false);
+      alertSetBeyondMaximumSpeed.setText(String.format("Shooter setpoint %s RPM is greater than maximum attainable motor speed. Reducing.", rotationsPerMinute));
+      alertSetBeyondMaximumSpeed.set(true);
+    } else {
+      alertSetBeyondMaximumSpeed.set(false);
     }
 
     double raw = kPidController.calculate(this.mechanismVelocityAv, rotationsPerMinute);
@@ -208,7 +216,7 @@ public class Shooter extends SubsystemBase {
     this.isCommanded = false;
     m_shooterL.stopMotor();
     m_shooterR.stopMotor();
-    
+    alertSetBeyondMaximumSpeed.set(false);
   }
 
   /*
@@ -218,6 +226,7 @@ public class Shooter extends SubsystemBase {
     this.isCommanded = false;
     m_shooterL.set(0);
     m_shooterR.set(0);
+    alertSetBeyondMaximumSpeed.set(false);
   }
  
   /*

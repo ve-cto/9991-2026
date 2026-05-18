@@ -8,7 +8,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,6 +22,8 @@ import frc.robot.subsystems.NetworkTablesIO;
 public class TrajectoryCalculator extends SubsystemBase {
     private final NetworkTableInstance ntInst = NetworkTableInstance.getDefault();
     private NetworkTablesIO networkTablesIO;
+    private final NetworkTable ntTrajCalcTable = ntInst.getTable("TrajectoryCalculator");
+    
     private final Pose2d blueHubPose = new Pose2d(4.65, 4, new Rotation2d());
     private final Pose2d redHubPose = new Pose2d(12, 4, new Rotation2d());
     private double hubHeightMeters = 1.8288;
@@ -50,7 +54,7 @@ public class TrajectoryCalculator extends SubsystemBase {
 
     public TrajectoryCalculator(NetworkTablesIO m_networkTablesIO) {
         this.networkTablesIO = m_networkTablesIO;
-        this.isRedAlliance = m_networkTablesIO.getAlliance();
+        updateAlliance();
         // key == distance (METERS)
         // value == RPM
         // shooterSpeedTreeMap.put(0.0, 3000.0);
@@ -78,8 +82,12 @@ public class TrajectoryCalculator extends SubsystemBase {
         return () -> this.getRequiredSpeedsSOTM(state)[1];
     }
 
+    public DoubleSupplier getRequiredHoodAngleSOTM(SwerveDriveState state) {
+        return () -> this.getRequiredHoodAngle(this.getRequiredSpeedsSOTM(state)[2]);
+    }
+
     public DoubleSupplier getRequiredShooterSpeedSOTM(SwerveDriveState state) {
-        return () -> this.getRequiredSpeedsSOTM(state)[0];
+        return () -> this.getRequiredShooterSpeed(this.getRequiredSpeedsSOTM(state)[0]);
     }
 
     // // https://blog.eeshwark.com/robotblog/shooting-on-the-fly
@@ -93,57 +101,76 @@ public class TrajectoryCalculator extends SubsystemBase {
         double robotVelX = state.Speeds.vxMetersPerSecond;
         double robotVelY = state.Speeds.vyMetersPerSecond;
         // convert velocity into robot centric
-        double velXField = Math.cos(robotHeadingRadians) * robotVelX;
-        double velYField = Math.sin(robotHeadingRadians) * robotVelY;
+        double velXField = (Math.cos(robotHeadingRadians) * robotVelX) - (Math.sin(robotHeadingRadians) * robotVelY);
+        double velYField = (Math.sin(robotHeadingRadians) * robotVelX) + robotVelY * Math.cos(robotHeadingRadians);
+        ntTrajCalcTable.putValue("velXField", NetworkTableValue.makeDouble(velXField));
+        ntTrajCalcTable.putValue("velYField", NetworkTableValue.makeDouble(velYField));
 
 
         double targetXRelative = hubTranslation2d.getX() - robotTranslation2d.getX();
         double targetYRelative = hubTranslation2d.getY() - robotTranslation2d.getY();
+        ntTrajCalcTable.putValue("targetXRelative", NetworkTableValue.makeDouble(targetXRelative));
+        ntTrajCalcTable.putValue("targetYRelative", NetworkTableValue.makeDouble(targetYRelative));
         Translation2d targetPositionRelative = new Translation2d(targetXRelative, targetYRelative);
         
         Translation2d shotVectorRelative = new Translation2d(targetXRelative - velXField, targetYRelative - velYField);
-        double distanceToShot = shotVectorRelative.getNorm();
-        double angleToShotRadians = Math.atan(shotVectorRelative.getY() / shotVectorRelative.getX());
 
-        int quadrant = 0;
-        if (targetXRelative >= 0 && targetYRelative >= 0) {
-            // goal is up right
+        if (!this.isRedAlliance) { // if we're on blue we need to invert else the robot is backwards for some reason
+            shotVectorRelative = shotVectorRelative.times(-1);
+        }
+
+        double distanceToShot = shotVectorRelative.getNorm();
+        ntTrajCalcTable.putValue("distanceToShot", NetworkTableValue.makeDouble(distanceToShot));
+
+        double angleToShotRadians = Math.atan2(shotVectorRelative.getY(), shotVectorRelative.getX());
+        ntTrajCalcTable.putValue("angleToShotRadians 1", NetworkTableValue.makeDouble(angleToShotRadians));
+        angleToShotRadians += Math.PI;
+        
+        double quadrant = 0;
+        if (targetXRelative <= 0 && targetYRelative <= 0) {
+            // goal is down left, robot up right
             quadrant = 1;
-        } else if (targetXRelative >= 0 && targetYRelative <= 0) {
-            // goal is down right
-            quadrant = 4;
         } else if (targetXRelative <= 0 && targetYRelative >= 0) {
-            // goal is up left
+            // goal is up left, robot down right
+            quadrant = 4;
+        } else if (targetXRelative >= 0 && targetYRelative <= 0) {
+            // goal is down right, robot up left
             quadrant = 2;
-        } else if (targetXRelative <= 0 && targetYRelative <= 0) {
-            // goal is down left 
+        } else if (targetXRelative >= 0 && targetYRelative >= 0) {
+            // goal is up right, robot down left
             quadrant = 3;
         }
+
+        ntTrajCalcTable.putValue("quadrant", NetworkTableValue.makeDouble(quadrant));
+
         // catch broken
         // if (quadrant == 0) {
         //     quadrant = 1;
         // }
 
         if (quadrant == 1) {
-            angleToShotRadians = angleToShotRadians; //unchanged
+            // angleToShotRadians = -angleToShotRadians; 
         }
         if (quadrant == 2) {
-            angleToShotRadians = Math.PI - angleToShotRadians;
+            // angleToShotRadians = angleToShotRadians; 
         }
         if (quadrant == 3) {
-            angleToShotRadians = Math.PI + angleToShotRadians;
+            // angleToShotRadians = angleToShotRadians;
         }
         if (quadrant == 4) {
-            angleToShotRadians = -angleToShotRadians;
+            // angleToShotRadians = Math.PI/2 - angleToShotRadians; 
         }
-        double angleToShotDegrees = angleToShotRadians * (180/Math.PI);
+        // ntTrajCalcTable.putValue("angleToShotRadians 2", NetworkTableValue.makeDouble(angleToShotRadians));
+        
+        // double angleToShotDegrees = angleToShotRadians * (180/Math.PI);
 
-        if (angleToShotDegrees >= 180) {
-            // put the angle into -180 to 180 space
-            angleToShotDegrees = angleToShotDegrees - 360;
-        }
+        // if (angleToShotRadians >= Math.PI) {
+        //     // put the angle into -180 to 180 space
+        //     angleToShotRadians = angleToShotRadians - 2*Math.PI;
+        // }
+        ntTrajCalcTable.putValue("angleToShotRadians Final", NetworkTableValue.makeDouble(angleToShotRadians));
 
-        return new double[] {distanceToShot, angleToShotDegrees};
+        return new double[] {distanceToShot, angleToShotRadians, distanceToShot};
         
 
         // if (quadrant ==)
@@ -231,11 +258,19 @@ public class TrajectoryCalculator extends SubsystemBase {
         return () -> hoodAngleTreeMap.get(getHubDistance());
     }
 
-    public double getRequiredShooterSpeed(Pose2d pose) {
+    public double getRequiredShooterSpeedPose(Pose2d pose) {
         return shooterSpeedTreeMap.get(this.getRobotDistanceToPose(pose));
     }
 
-    public double getRequiredHoodAngle(Pose2d pose) {
+    public double getRequiredShooterSpeed(double distance) {
+        return shooterSpeedTreeMap.get(distance);
+    }
+
+    public double getRequiredHoodAngle(double distance) {
+        return hoodAngleTreeMap.get(distance);
+    }
+
+    public double getRequiredHoodAnglePose(Pose2d pose) {
         return hoodAngleTreeMap.get(this.getRobotDistanceToPose(pose));
     }
 

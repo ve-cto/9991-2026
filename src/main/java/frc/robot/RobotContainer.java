@@ -10,7 +10,9 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 // Pathplanner and Poses
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -30,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.Commands;
 // Commands
 // import frc.robot.commands.drive.DriveToApriltag;
@@ -52,7 +55,6 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.DebugMotors;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Feeder;
-
 
 public class RobotContainer {
     // #region Swerve setup
@@ -100,6 +102,12 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
     // #endregion Misc
     
+    private final Alert alertJoystickUnplugged = new Alert("", AlertType.kWarning);
+    private final Alert alertEstopped = new Alert("Robot has been EStopped and requires a restart or redeploy to resume operation.", AlertType.kError);
+
+    private final Trigger unplugged = new Trigger(() -> !driveJoystick.isConnected());
+    private final Trigger plugged = new Trigger(() -> driveJoystick.isConnected());
+
     public RobotContainer() {
         NamedCommands.registerCommand("ExtendIntake", m_arm.extendIntakeCommand());
         NamedCommands.registerCommand("RetractIntake", m_arm.retractIntakeCommand());
@@ -183,7 +191,7 @@ public class RobotContainer {
         // driveJoystick.rightBumper().whileTrue(drivetrain.applyRequest(() -> brake));
         // driveJoystick.R1().whileTrue(drivetrain.applyRequest(() -> brake));
 
-        // When we enable test mode, update the shooter motor's configs (kp ki kd)
+        // When we enable test mode, update the subsystem PID configs (kp ki kd)
         RobotModeTriggers.test().whileTrue(m_shooter.updateMotorConfigsCommand());
         RobotModeTriggers.test().whileTrue(m_hood.updateMotorConfigsCommand());
         RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop().or(RobotModeTriggers.test())).whileTrue(m_trajectoryCalculator.updateAllianceCommand());
@@ -267,19 +275,27 @@ public class RobotContainer {
             .alongWith(
                 // m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub())
                 m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedSOTM(drivetrain.getState()))
+                // m_shooter.runRPMCommand(() -> 10000)
             )
             .alongWith(
-                m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleHub())
+                m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleSOTM(drivetrain.getState()))
             )
-            .alongWith(
-                m_intake.runIntakeCommand()
-            )
-            .alongWith(
-                m_led.displayShooterSepoint(m_shooter.getLedProgressMark())
-            )
+            // .alongWith(
+            //     m_intake.runIntakeCommand()
+            // )
+            // .alongWith(
+            //     m_led.displayShooterSepoint(m_shooter.getLedProgressMark()).onlyIf(driveJoystick.a().negate().and(m_shooter.atSetpoint().negate()))
+            // )
         );
-        driveJoystick.a().whileTrue(m_feeder.feedCommand());
+        driveJoystick.a().and(m_shooter.isCommanded()).whileTrue(
+            m_led.display(Constants.Led.StatusList.SHOOTING)
+        );
 
+        driveJoystick.povRight().and(driveJoystick.a().negate()).whileTrue(
+            m_led.displayShooterSepoint(m_shooter.getLedProgressMark())
+        );
+        
+        driveJoystick.a().whileTrue(m_feeder.feedCommand());
         // driveJoystick.a().whileTrue(
         //     Commands.runEnd(
         //         () -> driveJoystick.setRumble(RumbleType.kBothRumble, 1.0),
@@ -291,9 +307,7 @@ public class RobotContainer {
         //     m_led.display(Constants.Led.StatusList.ALIGNED)
         // );
 
-        // driveJoystick.povRight().whileTrue(
-        //     m_led.display(Constants.Led.StatusList.SHOOTING)
-        // );
+        
 
         driveJoystick.povLeft().whileTrue(
             m_hood.gotoPercentageCommand(() -> 1.0)
@@ -327,13 +341,17 @@ public class RobotContainer {
         // If the robot is ESTOPPED, flash
         RobotModeTriggers.disabled().and(() -> DriverStation.isEStopped()).whileTrue(m_led.estop().ignoringDisable(true));
         // #endregion LEDs
-    
+        RobotModeTriggers.disabled().and(() -> DriverStation.isEStopped()).onTrue(Commands.runOnce(() -> alertEstopped.set(true)).ignoringDisable(true));
+
+        // this.unplugged().and(() -> !driveJoystick.isConnected()).onTrue(Commands.runOnce(() -> alertJoystickUnplugged.set(true)).ignoringDisable(true));
+        // controllerUnpluggedTrigger().and(() -> driveJoystick.isConnected()).onTrue(Commands.runOnce(() -> alertJoystickUnplugged.set(false)).ignoringDisable(true));
+        
         // While the robot is not disabled (NOT in auto, teleop, test), add m_vision measurements to pose.
         RobotModeTriggers.disabled().whileFalse(
             m_vision.addVisionMeasurementCommand()
         );
     }
-    
+
     public Command getAutonomousCommand() {
         // Return the auto selected by the chooser on SmartDashboard
         return autoChooser.getSelected();

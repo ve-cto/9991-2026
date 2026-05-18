@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Second;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -33,13 +34,27 @@ public class Led extends SubsystemBase {
 
     private Constants.Led.StatusList Status = Constants.Led.StatusList.DISCONNECT; // set to disconnect at start to avoid nullpointer
 
+    // List of states:
     // DISCONNECT,
     // DISABLED,
+    // ESTOPPED,
+    // BLANK,
     // TELEOP,           
     // AUTONOMOUS,
-    // ALIGNED,        // Aligned to the hub?
-    // UNALIGNED,
-    // BLANK
+    // ALIGNED,
+    // READY,
+    // SHOOTING,
+    // NOTREADY,
+    // REVERSE,
+    // SPINUP
+
+    // STATES DUE REVIEW:
+    // ALIGNED,
+    // READY,
+    // SHOOTING,
+    // NOTREADY,
+    // REVERSE,
+    // SPINUP
 
     private LEDPattern pDisconnectMask = LEDPattern.steps(Map.of(0, Color.kWhite, 0.1, Color.kBlack)).scrollAtRelativeSpeed(Percent.per(Second).of(5));
     private LEDPattern pDisconnectBase = LEDPattern.solid(Color.kDarkRed); 
@@ -61,7 +76,7 @@ public class Led extends SubsystemBase {
     private LEDPattern pAutonomousBase = LEDPattern.rainbow(255, 200).scrollAtRelativeSpeed(Percent.per(Second).of(25));
     private LEDPattern pAutonomous = pAutonomousBase.mask(pAutonomousMask).atBrightness(Percent.of(100));
 
-    private LEDPattern pAligned = LEDPattern.solid(Color.kLimeGreen).atBrightness(Percent.of(100));
+    private LEDPattern pAligned = LEDPattern.solid(Color.kAquamarine).atBrightness(Percent.of(100));
     private LEDPattern pNotready = LEDPattern.solid(Color.kCrimson).atBrightness(Percent.of(100));
 
     private double progressVar1 = 0;
@@ -80,6 +95,8 @@ public class Led extends SubsystemBase {
     private LEDPattern pShooterSetpointBase = LEDPattern.solid(Color.kGold).atBrightness(Percent.of(100));
     
     private LEDPattern pShooterSetpoint = pSetpointMarker.overlayOn(pSetpointBottomGradient.overlayOn(pShooterSetpointBase.mask(progressMask1)));
+
+    private LEDPattern pShooting = LEDPattern.solid(Color.kLime).breathe(Second.of(1)).atBrightness(Percent.of(100));
 
     // ready
     // shooting - progressmask for shooter setpoint +- 200? red at bottom green at top?
@@ -106,7 +123,7 @@ public class Led extends SubsystemBase {
     }
 
     public Command displayShooterSepoint(DoubleSupplier progress) {
-        return new FunctionalCommand(() -> setProgressVar(1, progress), () -> setStatus(Constants.Led.StatusList.SHOOTING), interrupted -> nothing(), () -> false, this);
+        return new FunctionalCommand(() -> setProgressVar(1, progress), () -> setStatus(Constants.Led.StatusList.SPINUP), interrupted -> nothing(), () -> false, this);
     }
 
     public void nothing() {}
@@ -174,9 +191,10 @@ public class Led extends SubsystemBase {
                         pNotready.applyTo(this.l_ledBuffer);
                         break;
                     case SHOOTING:
-                        pShooterSetpoint.applyTo(this.l_ledBuffer);
+                        pShooting.applyTo(this.l_ledBuffer);
                         break;
-                    
+                    case SPINUP:
+                        pShooterSetpoint.applyTo(this.l_ledBuffer);
                 }
         } catch (NullPointerException e) {}
 

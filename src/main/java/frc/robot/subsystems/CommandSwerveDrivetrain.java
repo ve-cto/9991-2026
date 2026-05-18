@@ -25,6 +25,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -223,8 +225,32 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         configureAutoBuilder();
     }
 
+    private void configureElasticModuleStates() {
+        SmartDashboard.putData("Swerve Drive", new Sendable() {
+        @Override
+        public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+
+            builder.addDoubleProperty("Front Left Angle", () -> getModule(0).getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty("Front Left Velocity", () -> getModule(0).getCurrentState().speedMetersPerSecond, null);
+
+            builder.addDoubleProperty("Front Right Angle", () -> getModule(1).getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty("Front Right Velocity", () -> getModule(1).getCurrentState().speedMetersPerSecond, null);
+
+            builder.addDoubleProperty("Back Left Angle", () -> getModule(2).getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty("Back Left Velocity", () -> getModule(2).getCurrentState().speedMetersPerSecond, null);
+
+            builder.addDoubleProperty("Back Right Angle", () -> getModule(3).getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty("Back Right Velocity", () -> getModule(3).getCurrentState().speedMetersPerSecond, null);
+
+            builder.addDoubleProperty("Robot Angle", () -> getState().Pose.getRotation().getRadians(), null);
+        }
+        });
+    }
+
     private void configureAutoBuilder() {
         try {
+            configureElasticModuleStates();
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
                 () -> getState().Pose,   // Supplier of current robot pose
@@ -512,4 +538,5 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     //         () -> false,
     //         this);
     // }
+
 }  

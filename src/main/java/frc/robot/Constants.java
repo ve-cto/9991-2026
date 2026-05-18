@@ -78,7 +78,8 @@ public final class Constants {
             READY,
             SHOOTING,
             NOTREADY,
-            REVERSE
+            REVERSE,
+            SPINUP
         }
     }
 

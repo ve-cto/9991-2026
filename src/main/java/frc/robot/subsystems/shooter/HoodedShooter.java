@@ -18,10 +18,13 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -50,6 +53,9 @@ public class HoodedShooter extends SubsystemBase {
     final PositionVoltage c_request = new PositionVoltage(0).withSlot(0);
     final StaticBrake c_brake = new StaticBrake();
 
+    final Alert alertOutOfRange = new Alert("Hood has logged a position out of range of theoretically attainable positions.", AlertType.kWarning);
+    final Alert alertSetBeyondMaximumSpeed = new Alert("Hood requested speed is out of range of safe speeds, reducing.", AlertType.kWarning);
+
     public HoodedShooter() {
         SmartDashboard.putNumber("HOODkp", Constants.Hood.kdefaultKp);
         SmartDashboard.putNumber("HOODki", Constants.Hood.kdefaultKi);
@@ -70,6 +76,13 @@ public class HoodedShooter extends SubsystemBase {
         SmartDashboard.putNumber("Hood Position", s_hoodPosition);
         SmartDashboard.putBoolean("Hood Homed", homed);
         SmartDashboard.putNumber("Hood Exit Path Angle Degrees", map(s_hoodPosition, 0, kCountExtended, kAngleHomed, kAngleExtended));
+        if (s_hoodPosition > kCountExtended) {
+           alertOutOfRange.setText(String.format("Hood has logged position %s out of range of theoretically attainable positions. Timestamp: %s", s_hoodPosition, Timer.getFPGATimestamp()));
+            alertOutOfRange.set(true); 
+        }
+        // else {
+        //     alertOutOfRange.set(false);
+        // }
     }
 
     public void pollHoodEncoder() {
@@ -99,15 +112,18 @@ public class HoodedShooter extends SubsystemBase {
     public void run(double speed) {
         //Math.min(Math.max(value, min), max)
         if (speed > 0) homed = false; // if we move away from the home position, reset homed
+        if (speed > Constants.Hood.kMaxOutput) alertSetBeyondMaximumSpeed.set(true); else alertSetBeyondMaximumSpeed.set(false);
         m_hood.set(Math.min(Math.max(speed, -Constants.Hood.kMaxOutput), Constants.Hood.kMaxOutput)); // minmax for safety
     }
 
     public void brake() {
         m_hood.setControl(c_brake);
+        alertSetBeyondMaximumSpeed.set(false);
     }
 
     public void stop() {
         m_hood.stopMotor();
+        alertSetBeyondMaximumSpeed.set(false);
     }
     
     public void home() {
