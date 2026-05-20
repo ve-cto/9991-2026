@@ -93,9 +93,9 @@ public class Led extends SubsystemBase {
     private LEDPattern pSetpointBottomGradient = LEDPattern.gradient(GradientType.kDiscontinuous, Color.kRed, Color.kBlack, Color.kBlack, Color.kBlack, Color.kBlack, Color.kBlack, Color.kBlack);
 
     private LEDPattern pShooterSetpointBase = LEDPattern.solid(Color.kGold).atBrightness(Percent.of(100));
-    
     private LEDPattern pShooterSetpoint = pSetpointMarker.overlayOn(pSetpointBottomGradient.overlayOn(pShooterSetpointBase.mask(progressMask1)));
 
+    private LEDPattern pHoodPosition = LEDPattern.solid(Color.kGold).mask(progressMask2);
     private LEDPattern pShooting = LEDPattern.solid(Color.kLime).breathe(Second.of(1)).atBrightness(Percent.of(100));
 
     // ready
@@ -124,6 +124,10 @@ public class Led extends SubsystemBase {
 
     public Command displayShooterSepoint(DoubleSupplier progress) {
         return new FunctionalCommand(() -> setProgressVar(1, progress), () -> setStatus(Constants.Led.StatusList.SPINUP), interrupted -> nothing(), () -> false, this);
+    }
+
+    public Command displayHoodPosition(DoubleSupplier percentage) {
+        return new FunctionalCommand(() -> setProgressVar(1, percentage), () -> setStatus(Constants.Led.StatusList.HOOD), interrupted -> nothing(), () -> false, this);
     }
 
     public void nothing() {}
@@ -195,6 +199,10 @@ public class Led extends SubsystemBase {
                         break;
                     case SPINUP:
                         pShooterSetpoint.applyTo(this.l_ledBuffer);
+                        break;
+                    case HOOD:
+                        pHoodPosition.applyTo(this.l_ledBuffer);
+                        break;
                 }
         } catch (NullPointerException e) {}
 

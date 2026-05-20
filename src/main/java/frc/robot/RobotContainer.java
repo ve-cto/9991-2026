@@ -254,7 +254,7 @@ public class RobotContainer {
             m_arm.moveArmCommand(0.7)
         );
 
-        // driveJoystick.x().whileTrue(m_shooter.runDashboard());
+        driveJoystick.b().whileTrue(m_shooter.runDashboard());
         // driveJoystick.y().whileTrue(m_shooter.runRPMCommand(3500));
         // driveJoystick.b().whileTrue(m_shooter.runRPMCommand(4000));
         
@@ -263,11 +263,11 @@ public class RobotContainer {
         // driveJoystick.y().whileTrue(m_hood.runCommand(-1.0));
         // driveJoystick.y().whileTrue(m_hood.runSetpointPercentageCommand(0.8));
         // driveJoystick.x().whileTrue(m_hood.homeInCommand());
-        driveJoystick.b().whileTrue(m_hood.runCommand(1.0));
-        driveJoystick.y().whileTrue(m_hood.runCommand(-1.0));
-        driveJoystick.x().whileTrue(m_hood.gotoPercentageCommand(() -> 1.0));
+        driveJoystick.y().whileTrue(m_hood.gotoDashboard());
+        // driveJoystick.y().whileTrue(m_hood.runCommand(-1.0));
+        driveJoystick.x().whileTrue(m_hood.homeCommand());
         // driveJoystick.a().whileTrue(m_hood.resetHomeCommand());
-        m_hood.setDefaultCommand(m_hood.brakeCommand());
+        m_hood.setDefaultCommand(m_hood.holdCommand());
 
         driveJoystick.povRight().whileTrue(
             // new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)    
@@ -279,6 +279,7 @@ public class RobotContainer {
             )
             .alongWith(
                 m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleSOTM(drivetrain.getState()))
+                // m_hood.runCommand(1)
             )
             // .alongWith(
             //     m_intake.runIntakeCommand()
@@ -305,17 +306,16 @@ public class RobotContainer {
 
         // m_shooter.atSetpoint().and(m_shooter.isCommanded()).whileTrue(
         //     m_led.display(Constants.Led.StatusList.ALIGNED)
-        // );
-
-        
+        // ); 
 
         driveJoystick.povLeft().whileTrue(
             m_hood.gotoPercentageCommand(() -> 1.0)
             .alongWith(
                 m_shooter.runDashboard()
-            ).alongWith(
-                m_feeder.feedCommand(0.8)
             )
+            // .alongWith(
+            //     m_feeder.feedCommand(0.8)
+            // )
         );
 
         // driveJoystick.x().and(() -> m_shooter.isAtSetpoint()).whileTrue(m_feeder.feedCommand());

@@ -180,13 +180,13 @@ public class Shooter extends SubsystemBase {
     this.setpoint = rotationsPerMinute;
     if (rotationsPerMinute * Constants.Shooter.kControlRatio >= Constants.Hardware.kMaxKrakenFreeSpeed) {
       // DriverStation.reportWarning(String.format("WARN: Shooter setpoint %s is greater than maximum attainable motor speed.", rotationsPerMinute), false);
-      alertSetBeyondMaximumSpeed.setText(String.format("Shooter setpoint %s RPM is greater than maximum attainable motor speed. Reducing.", rotationsPerMinute));
+      alertSetBeyondMaximumSpeed.setText(String.format("Shooter setpoint %s RPM is greater than maximum attainable motor speed. Reducing to %s.", rotationsPerMinute, Constants.Hardware.kMaxKrakenFreeSpeed));
       alertSetBeyondMaximumSpeed.set(true);
     } else {
       alertSetBeyondMaximumSpeed.set(false);
     }
 
-    double raw = kPidController.calculate(this.mechanismVelocityAv, rotationsPerMinute);
+    // double raw = kPidController.calculate(this.mechanismVelocityAv, rotationsPerMinute);
     double feedforward = calculateFeedforward(rotationsPerMinute);
 
     m_shooterL.setControl(m_request.withVelocity(-rotationsPerMinute/60).withFeedForward(-feedforward));

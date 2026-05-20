@@ -34,7 +34,7 @@ public class Vision extends SubsystemBase {
     public static final Transform3d kRobotToCamAlphaSim = new Transform3d(new Translation3d(0.0, 0.0, 0.5), new Rotation3d(0, 0, 0));
     public static final Transform3d kRobotToCamBetaSim = new Transform3d(new Translation3d(-2.0, 0.0, 3.0), new Rotation3d(0, 0.84, 0)); // -1.5708 radians = 90 degrees
 
-    public static final Transform3d kRobotToCamAlpha = new Transform3d(new Translation3d(0.0, 0.0, 0.5), new Rotation3d(0, 0, 0));
+    public static final Transform3d kRobotToCamAlpha = new Transform3d(new Translation3d(0.0, 0.3, 0.52), new Rotation3d(20*(Math.PI/180), 0, 0));
     public static final Transform3d kRobotToCamBeta = new Transform3d(new Translation3d(0.0, 0.0, 0.0), new Rotation3d(0, 0.84, 0)); // -1.5708 radians = 90 degrees
 
     private final CommandSwerveDrivetrain m_drivetrain;
@@ -62,8 +62,9 @@ public class Vision extends SubsystemBase {
         m_drivetrain = drivetrain;
         m_networkTablesIO = networkTablesIO;
 
-        poseEstimator = new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCamAlpha);
-                
+        // poseEstimator = new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCamAlpha);
+        poseEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCamAlpha);
+        // poseEstimator.set
         // only set up sim cameras if we're in sim
         if (RobotBase.isSimulation()) {
             visionSim.addAprilTags(kTagLayout);

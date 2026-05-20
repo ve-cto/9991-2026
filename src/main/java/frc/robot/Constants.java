@@ -79,7 +79,8 @@ public final class Constants {
             SHOOTING,
             NOTREADY,
             REVERSE,
-            SPINUP
+            SPINUP,
+            HOOD
         }
     }
 
@@ -94,8 +95,8 @@ public final class Constants {
         public static final double kMaxOutput = 0.1;
 
 
-        public static final double kAngleExtended = 30;
-        public static final double kAngleHomed = 90;
+        public static final double kAngleExtended = 60;
+        public static final double kAngleHomed = 80;
         public static final double kCountExtended = 2;
 
         public static final double kdefaultKp = 2;
