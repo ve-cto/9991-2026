@@ -53,6 +53,8 @@ public class HoodedShooter extends SubsystemBase {
     final PositionVoltage c_request = new PositionVoltage(0).withSlot(0);
     final StaticBrake c_brake = new StaticBrake();
 
+    private double s_hoodPositionAlert = 0;
+    private double s_setpointAlert = 0;
     final Alert alertOutOfRange = new Alert("Hood has logged a position out of range of theoretically attainable positions.", AlertType.kWarning);
     final Alert alertRequestedOutOfRange = new Alert("Hood setpoint %s is out of range of registered setpoints, reducing.", AlertType.kWarning);
     final Alert alertSetBeyondMaximumSpeed = new Alert("Hood requested speed is out of range of safe speeds, reducing.", AlertType.kWarning);
@@ -77,15 +79,23 @@ public class HoodedShooter extends SubsystemBase {
         // SmartDashboard.putNumber("Encoder s_actuatorPosition Percentage", calculatePositionPercentageActuator());
         // SmartDashboard.putNumber("Encoder s_actuatorPosition Centimeters", calculatePositionCentimeters());
         SmartDashboard.putNumber("Hood Position", s_hoodPosition);
+        SmartDashboard.putBoolean("HoodSwitch", getEndstop());
         SmartDashboard.putBoolean("Hood Homed", homed);
         SmartDashboard.putNumber("Hood Exit Path Angle Degrees", map(s_hoodPosition, 0, kCountExtended, kAngleHomed, kAngleExtended));
+
         if (s_hoodPosition > kCountExtended) {
-           alertOutOfRange.setText(String.format("Hood has logged position %s out of range of theoretically attainable positions. Timestamp: %s", s_hoodPosition, Timer.getFPGATimestamp()));
-            alertOutOfRange.set(true); 
+            if (!Double.isNaN(s_hoodPosition)) {
+                s_hoodPositionAlert = s_hoodPosition;
+                alertOutOfRange.setText(String.format("Hood has logged position %s out of range of theoretically attainable positions. Timestamp: %s", s_hoodPositionAlert, Timer.getFPGATimestamp()));
+                alertOutOfRange.set(true); 
+            }
         }
 
-        if (this.setpoint > kCountExtended) {
-            alertRequestedOutOfRange.setText(String.format("Hood setpoint %s is out of range of registered setpoints, clamping to attainable range.", this.setpoint));
+        if (this.setpoint > kCountExtended && !Double.isNaN(this.setpoint)) {
+            this.s_setpointAlert = this.setpoint;
+            alertRequestedOutOfRange.setText(String.format("Hood setpoint %s is out of range of registered setpoints, clamping to attainable range.", this.s_setpointAlert));
+        } else {
+            alertRequestedOutOfRange.set(false);
         }
         
         // else {
@@ -123,7 +133,7 @@ public class HoodedShooter extends SubsystemBase {
 
     public void run(double speed) {
         //Math.min(Math.max(value, min), max)
-        if (speed > 0) homed = false; // if we move away from the home position, reset homed
+        if (speed > 0 || speed < 0) homed = false; // if we move away from the home position, reset homed
         if (speed > Constants.Hood.kMaxOutput) {alertSetBeyondMaximumSpeed.setText(String.format("Hood requested speed %s is out of range of safe speeds, reducing to %s.", speed, Math.copySign(Constants.Hood.kMaxOutput, speed))); alertSetBeyondMaximumSpeed.set(true);} 
         else alertSetBeyondMaximumSpeed.set(false);
         m_hood.set(Math.min(Math.max(speed, -Constants.Hood.kMaxOutput), Constants.Hood.kMaxOutput)); // minmax for safety
@@ -146,12 +156,14 @@ public class HoodedShooter extends SubsystemBase {
     
     public void home() {
         this.setpoint = 0;
-        if (getEndstop()) { // if no endstop, run
+        if (!getEndstop()) { // if no endstop, run
             this.run(-0.2);
-        } else if (!getEndstop()) { // if endstop, stop
+        } else if (getEndstop()) { // if endstop, stop
             this.stop();
-            this.reset();
-            this.homed = true;
+            if (this.homed == false) {
+                this.reset();
+                this.homed = true;
+            }
         } else {
             // theoretically shouldn't trigger BUT IF IT DOES you'll be happy that it doesn't kill itself <3
             this.stop();
@@ -164,6 +176,7 @@ public class HoodedShooter extends SubsystemBase {
 
     public void runClosedLoop(DoubleSupplier setpoint) {
         double s = setpoint.getAsDouble();
+        if (s > 0) this.homed = false;
         if (s > Constants.Hood.kMaxOutput) {alertRequestedOutOfRange.setText(String.format("Hood setpoint %s is out of range of registered setpoints, clamping to attainable range.", setpoint)); alertRequestedOutOfRange.set(true);} 
         else alertRequestedOutOfRange.set(false);
         s = s > kCountExtended ? 2 : s; // if the setpoint is greater than the maximum attainable setpoint, set to max
@@ -175,6 +188,7 @@ public class HoodedShooter extends SubsystemBase {
     public void runClosedLoopPercentage(DoubleSupplier percentage) { // setpoint as a percentage of whole movement
         double p = percentage.getAsDouble();
         double s = p * kCountExtended;
+        if (s > 0) this.homed = false;
         if (s > Constants.Hood.kMaxOutput) {alertRequestedOutOfRange.setText(String.format("Hood setpoint %s is out of range of registered setpoints, clamping to attainable range.", setpoint)); alertRequestedOutOfRange.set(true);} 
         else alertRequestedOutOfRange.set(false);
         s = s > kCountExtended ? 2 : s; // if the setpoint is greater than the maximum attainable setpoint, set to max
@@ -211,6 +225,7 @@ public class HoodedShooter extends SubsystemBase {
         d = map(d, kAngleHomed, kAngleExtended, 0, kCountExtended);
         // SmartDashboard.putNumber("HOODd3", d);
         this.setpoint = d;
+        if (d > 0) this.homed = false;
         m_hood.setControl(c_request.withPosition(this.setpoint));
     }
 
@@ -222,14 +237,22 @@ public class HoodedShooter extends SubsystemBase {
         // resetPid();
     }
 
+    public void resetSetpoint() {
+        this.setpoint = 0;
+    }
+
+    public void stopreset() {
+        this.resetSetpoint();
+        this.stop();
+    }
     // -----------------------------------------------------------------------------------------------------------------
 
     public Command runCommand(double speed) {
-        return this.runEnd(() -> this.run(speed), () -> this.stop());
+        return this.runEnd(() -> this.run(speed), () -> this.stopreset());
     }
 
     public Command brakeCommand() {
-        return this.runEnd(() -> this.brake(), () -> this.stop());
+        return this.runEnd(() -> this.brake(), () -> this.stopreset());
     }
 
     public Command stopCommand() {
@@ -237,23 +260,23 @@ public class HoodedShooter extends SubsystemBase {
     }
 
     public Command holdCommand() {
-        return this.runEnd(() -> this.hold(), () -> this.stop());
+        return this.runEnd(() -> this.hold(), () -> this.stopreset());
     }
 
     public Command homeCommand() {
-        return this.runEnd(() -> this.home(), () -> this.stop());
+        return this.runEnd(() -> this.home(), () -> this.stopreset());
     }
 
     public Command gotoPositionCommand(DoubleSupplier setpoint) {
-        return this.runEnd(() -> this.runClosedLoop(setpoint), () -> this.stop());
+        return this.runEnd(() -> this.runClosedLoop(setpoint), () -> this.stopreset());
     }
 
     public Command gotoPercentageCommand(DoubleSupplier percentage) {
-        return this.runEnd(() -> this.runClosedLoopPercentage(percentage), () -> this.stop());
+        return this.runEnd(() -> this.runClosedLoopPercentage(percentage), () -> this.stopreset());
     }
 
     public Command gotoAngleCommand(DoubleSupplier degrees) {
-        return this.runEnd(() -> this.runClosedLoopAngle(degrees), () -> this.stop());
+        return this.runEnd(() -> this.runClosedLoopAngle(degrees), () -> this.stopreset());
     }
 
     public Command updateMotorConfigsCommand() {

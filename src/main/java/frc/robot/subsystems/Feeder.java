@@ -55,7 +55,7 @@ public class Feeder extends SubsystemBase {
   public void run(double speed) {
     // m_feederFX.set(speed);
     this.output = speed;
-    m_feederSPX.set(speed);
+    m_feederSPX.set(-speed);
   }
 
   public void stop() {

@@ -203,10 +203,12 @@ public class RobotContainer {
             m_arm.coastCommand()
         );
         m_feeder.setDefaultCommand(
+            // m_feeder.feedCommand(-0.6)
             m_feeder.coastCommand()
         );
         m_shooter.setDefaultCommand(
             m_shooter.coastCommand()
+            // m_shooter.brakeCommand()
         );
         // Default to displaying the specific modes' pattern (disconn, disabl, auto, teleop)
         m_led.setDefaultCommand(
@@ -267,19 +269,20 @@ public class RobotContainer {
         // driveJoystick.y().whileTrue(m_hood.runCommand(-1.0));
         driveJoystick.x().whileTrue(m_hood.homeCommand());
         // driveJoystick.a().whileTrue(m_hood.resetHomeCommand());
-        m_hood.setDefaultCommand(m_hood.holdCommand());
+        // m_hood.setDefaultCommand(m_hood.holdCommand());
 
         driveJoystick.povRight().whileTrue(
-            // new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)    
-            new PointToAngle(m_trajectoryCalculator.getRequiredRobotAngleSOTM(drivetrain.getState()), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain)
+            new PointToHub(() -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain, m_networkTablesIO)    
+            // new PointToAngle(m_trajectoryCalculator.getRequiredRobotAngleSOTM(drivetrain.getState()), () -> -driveJoystick.getLeftY() * MaxSpeed, () -> -driveJoystick.getLeftX() * MaxSpeed, drivetrain)
             .alongWith(
-                // m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub())
-                m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedSOTM(drivetrain.getState()))
+                m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedHub())
+                // m_shooter.runRPMCommand(m_trajectoryCalculator.getRequiredShooterSpeedSOTM(drivetrain.getState()))
                 // m_shooter.runRPMCommand(() -> 10000)
             )
             .alongWith(
-                m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleSOTM(drivetrain.getState()))
+                // m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleSOTM(drivetrain.getState()))
                 // m_hood.runCommand(1)
+                m_hood.gotoAngleCommand(m_trajectoryCalculator.getRequiredHoodAngleHub())
             )
             // .alongWith(
             //     m_intake.runIntakeCommand()
@@ -309,10 +312,11 @@ public class RobotContainer {
         // ); 
 
         driveJoystick.povLeft().whileTrue(
-            m_hood.gotoPercentageCommand(() -> 1.0)
-            .alongWith(
-                m_shooter.runDashboard()
-            )
+            // m_hood.gotoPercentageCommand(() -> 1.0)
+            m_hood.gotoDashboard()
+            // .alongWith(
+            //     m_shooter.runDashboard()
+            // )
             // .alongWith(
             //     m_feeder.feedCommand(0.8)
             // )

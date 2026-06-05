@@ -31,10 +31,10 @@ public class Vision extends SubsystemBase {
     public final PhotonCamera cameraBeta = new PhotonCamera(Constants.Vision.kCameraBetaName);
     
     public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-    public static final Transform3d kRobotToCamAlphaSim = new Transform3d(new Translation3d(0.0, 0.0, 0.5), new Rotation3d(0, 0, 0));
+    public static final Transform3d kRobotToCamAlphaSim = new Transform3d(new Translation3d(0.345, 0.1, 0.5), new Rotation3d(0, 23*(Math.PI/180), 0));
     public static final Transform3d kRobotToCamBetaSim = new Transform3d(new Translation3d(-2.0, 0.0, 3.0), new Rotation3d(0, 0.84, 0)); // -1.5708 radians = 90 degrees
 
-    public static final Transform3d kRobotToCamAlpha = new Transform3d(new Translation3d(0.0, 0.3, 0.52), new Rotation3d(20*(Math.PI/180), 0, 0));
+    public static final Transform3d kRobotToCamAlpha = new Transform3d(new Translation3d(-0.25, -0.0, 0.52), new Rotation3d(0, 23*(Math.PI/180), 0));
     public static final Transform3d kRobotToCamBeta = new Transform3d(new Translation3d(0.0, 0.0, 0.0), new Rotation3d(0, 0.84, 0)); // -1.5708 radians = 90 degrees
 
     private final CommandSwerveDrivetrain m_drivetrain;

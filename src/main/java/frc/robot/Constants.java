@@ -34,8 +34,8 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final double kIntakeForwardSpeed = 0.8;
-        public static final double kIntakeReverseSpeed = -0.9;
+        public static final double kIntakeForwardSpeed = -0.8;
+        public static final double kIntakeReverseSpeed = 0.9;
         public static final double kArmExtendedPosition = 1000; // TODO: tune
         public static final double kArmRetractedPosition = 0;
     }

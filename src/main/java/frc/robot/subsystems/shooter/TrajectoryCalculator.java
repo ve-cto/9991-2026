@@ -33,8 +33,8 @@ public class TrajectoryCalculator extends SubsystemBase {
 
     private double shooterSpeedPairs[][] = {
         {1.5, 3200},
-        {2.5, 3400},
-        {3.5, 3600},
+        {2.5, 3500},
+        {3.5, 3620},
         {4.5, 3690},
         {5.5, 3995},
         {6.5, 4200}
