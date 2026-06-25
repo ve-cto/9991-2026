@@ -15,8 +15,12 @@ import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringSubscriber;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -34,6 +38,7 @@ public class NetworkTablesIO extends SubsystemBase {
   private final NetworkTableInstance ntInst = NetworkTableInstance.getDefault();
   private final NetworkTable fmsTable = ntInst.getTable("FMSInfo");
   private final NetworkTable drivetrainTable = ntInst.getTable("Pose");
+  // private final NetworkTable smartDashboardTable = ntInst.getTable("SmartDashboard");
   private final DoubleArraySubscriber poseSubscriber = drivetrainTable.getDoubleArrayTopic("robotPose").subscribe(new double[] {0.0, 0.0, 0.0});
   private final BooleanSubscriber allianceSubscriber = fmsTable.getBooleanTopic("IsRedAlliance").subscribe(isRedAlliance);
 
@@ -43,6 +48,8 @@ public class NetworkTablesIO extends SubsystemBase {
   private final Rectangle2d blueAllianceZoneRect = new Rectangle2d(new Pose2d(new Translation2d(2, 4), new Rotation2d()), 4, 8);
   private final Rectangle2d redAllianceZoneRect = new Rectangle2d(new Pose2d(new Translation2d(14.5, 4), new Rotation2d()), 4, 8);
   private final Rectangle2d centerFieldZoneRect = new Rectangle2d(new Pose2d(new Translation2d(8.25, 4), new Rotation2d()), 8.5, 8);
+  private final Alert alertAutoRunning = new Alert("", AlertType.kInfo);
+
   /** Creates a new NetworkTablesIO. */
   public NetworkTablesIO() {}
 
@@ -81,11 +88,23 @@ public class NetworkTablesIO extends SubsystemBase {
     } else {
       this.isInCenterField = false;
     }
+
+
   
     SmartDashboard.putBoolean("isInBlueAllianceZone", isInBlueAllianceZone);
     SmartDashboard.putBoolean("isInRedAllianceZone", isInRedAllianceZone);
     SmartDashboard.putBoolean("isInOwnAllianceZone", this.isInOwnAllianceZone);
     SmartDashboard.putBoolean("isInCenterField", this.isInCenterField);
+  }
+
+  public void publishAutoAlert(boolean isRunning, String name) {
+    if (!isRunning) {
+      alertAutoRunning.set(false);
+      return;
+    }
+    
+    alertAutoRunning.setText(String.format("CURRENTLY RUNNING AUTONOMOUS: %s", name));
+    alertAutoRunning.set(true);
   }
 
   public Pose2d getNetworkPose() {

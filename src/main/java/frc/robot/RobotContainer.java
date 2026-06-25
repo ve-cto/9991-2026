@@ -24,8 +24,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import static edu.wpi.first.units.Units.*;
 
-import java.lang.annotation.Retention;
-
 // Command Setup and Controllers
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -62,7 +60,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(Constants.Swerve.kMaxAngularRps).in(RadiansPerSecond); // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+    private final SwerveRequest.FieldCentric driveFieldCentric = new SwerveRequest.FieldCentric()
         .withDeadband(MaxSpeed * Constants.Swerve.kDeadbandFraction)
         .withRotationalDeadband(MaxAngularRate * Constants.Swerve.kDeadbandFraction) // Add a 10% deadband
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
@@ -83,7 +81,7 @@ public class RobotContainer {
     public final Vision m_vision = new Vision(drivetrain, m_networkTablesIO);
     private final Intake m_intake = new Intake();
     private final Arm m_arm = new Arm();
-    private final DebugMotors m_DebugMotors = new DebugMotors();
+    // private final DebugMotors m_DebugMotors = new DebugMotors();
     private final Led m_led = new Led();
     private final Shooter m_shooter = new Shooter();
     private final Feeder m_feeder = new Feeder();
@@ -102,11 +100,11 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
     // #endregion Misc
     
-    private final Alert alertJoystickUnplugged = new Alert("", AlertType.kWarning);
+    // private final Alert alertJoystickUnplugged = new Alert("", AlertType.kWarning);
     private final Alert alertEstopped = new Alert("Robot has been EStopped and requires a restart or redeploy to resume operation.", AlertType.kError);
 
-    private final Trigger unplugged = new Trigger(() -> !driveJoystick.isConnected());
-    private final Trigger plugged = new Trigger(() -> driveJoystick.isConnected());
+    // private final Trigger unplugged = new Trigger(() -> !driveJoystick.isConnected());
+    // private final Trigger plugged = new Trigger(() -> driveJoystick.isConnected());
 
     public RobotContainer() {
         NamedCommands.registerCommand("ExtendIntake", m_arm.extendIntakeCommand());
@@ -133,15 +131,6 @@ public class RobotContainer {
 
     private void configureBindings() {
         // #region Swerve Setup
-        drivetrain.setDefaultCommand(
-            // Set default drivetrain command to be driving with joysticks. Unless another command is scheduled (such as PointToHub), this command will run.
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-driveJoystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driveJoystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-driveJoystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
-
         // Point the modules towards the direction of the left stick, without driving the robot. Note that this does not get updated while holding, only on initialize. (They aren't double suppliers)
         // driveJoystick.triangle().whileTrue(drivetrain.applyRequest(() ->
         //     point.withModuleDirection(new Rotation2d(-driveJoystick.getLeftY(), -driveJoystick.getLeftX()))
@@ -159,9 +148,6 @@ public class RobotContainer {
         RobotModeTriggers.test().whileTrue(
             drivetrain.applyRequest(() -> swerveIdle).ignoringDisable(true)
         );
-        // RobotModeTriggers.disabled().whileFalse(
-        //     null
-        // );
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -192,10 +178,17 @@ public class RobotContainer {
         // driveJoystick.R1().whileTrue(drivetrain.applyRequest(() -> brake));
 
         // When we enable test mode, update the subsystem PID configs (kp ki kd)
-        RobotModeTriggers.test().whileTrue(m_shooter.updateMotorConfigsCommand());
-        RobotModeTriggers.test().whileTrue(m_hood.updateMotorConfigsCommand());
-        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop().or(RobotModeTriggers.test())).whileTrue(m_trajectoryCalculator.updateAllianceCommand());
+        RobotModeTriggers.test().whileTrue(m_shooter.updateMotorConfigsCommand().alongWith(m_hood.updateMotorConfigsCommand()));
+        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop().or(RobotModeTriggers.test())).whileTrue(m_trajectoryCalculator.updateAllianceCommand().alongWith(Commands.runOnce(() -> m_networkTablesIO.publishAutoAlert(false, autoChooser.getSelected().toString()), m_networkTablesIO).asProxy()));
+        RobotModeTriggers.autonomous().onTrue(Commands.runOnce(() -> m_networkTablesIO.publishAutoAlert(true, autoChooser.getSelected().toString()), m_networkTablesIO).asProxy());
 
+        drivetrain.setDefaultCommand(
+            drivetrain.applyRequest(() ->
+                driveFieldCentric.withVelocityX(-driveJoystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driveJoystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driveJoystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            )
+        );
         m_intake.setDefaultCommand(
             m_intake.coastCommand()
         );
@@ -214,6 +207,7 @@ public class RobotContainer {
         m_led.setDefaultCommand(
             m_led.handleDefault().ignoringDisable(true)
         );
+        m_hood.setDefaultCommand(m_hood.brakeCommand());
         
         // ---------------------------------------
 

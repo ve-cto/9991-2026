@@ -85,8 +85,8 @@ public class HoodedShooter extends SubsystemBase {
 
         if (s_hoodPosition > kCountExtended) {
             if (!Double.isNaN(s_hoodPosition)) {
-                s_hoodPositionAlert = s_hoodPosition;
-                alertOutOfRange.setText(String.format("Hood has logged position %s out of range of theoretically attainable positions. Timestamp: %s", s_hoodPositionAlert, Timer.getFPGATimestamp()));
+                this.s_hoodPositionAlert = s_hoodPosition;
+                alertOutOfRange.setText(String.format("Hood has logged position %s out of range of theoretically attainable positions. Timestamp: %s", this.s_hoodPositionAlert, Timer.getFPGATimestamp()));
                 alertOutOfRange.set(true); 
             }
         }
