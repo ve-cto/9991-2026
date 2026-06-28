@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.util.CANUtil;
 
 public class HoodedShooter extends SubsystemBase {
     private final TalonFX m_hood = new TalonFX(Constants.Hardware.kHoodId);
@@ -59,7 +60,11 @@ public class HoodedShooter extends SubsystemBase {
     final Alert alertRequestedOutOfRange = new Alert("Hood setpoint %s is out of range of registered setpoints, reducing.", AlertType.kWarning);
     final Alert alertSetBeyondMaximumSpeed = new Alert("Hood requested speed is out of range of safe speeds, reducing.", AlertType.kWarning);
 
+    private final CANUtil kCANUtil = CANUtil.getInstance();
+
     public HoodedShooter() {
+        kCANUtil.registerDevice("m_hood", Constants.Hardware.kHoodId, Constants.Hardware.DeviceType.TalonFX);
+    
         SmartDashboard.putNumber("HOODkp", Constants.Hood.kdefaultKp);
         SmartDashboard.putNumber("HOODki", Constants.Hood.kdefaultKi);
         SmartDashboard.putNumber("HOODkd", Constants.Hood.kdefaultKd);

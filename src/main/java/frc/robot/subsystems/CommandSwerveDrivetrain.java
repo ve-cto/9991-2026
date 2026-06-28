@@ -38,7 +38,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-
+import frc.robot.subsystems.util.CANUtil;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.Constants;
@@ -72,6 +72,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // set up drive request specifically for driving to a pose
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(Constants.Swerve.kMaxAngularRps).in(RadiansPerSecond); // max angular velocity
+
+    private final CANUtil kCANUtil = CANUtil.getInstance();
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
         .withDeadband(MaxSpeed * Constants.Swerve.kDeadbandFraction)
@@ -161,6 +163,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
         configureAutoBuilder();
+        registerDevices();
+        configureElasticModuleStates();
     }
 
     /**
@@ -188,6 +192,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
         configureAutoBuilder();
+        registerDevices();
+        configureElasticModuleStates();
     }
 
     /**
@@ -223,6 +229,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
         configureAutoBuilder();
+        registerDevices();
+        configureElasticModuleStates();
     }
 
     private void configureElasticModuleStates() {
@@ -248,9 +256,31 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
+    private void registerDevices() {
+        try {
+            kCANUtil.registerDevice("Swerve_FrontLeftDriveMotor", this.getModule(0).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
+            kCANUtil.registerDevice("Swerve_FrontLeftSteerMotor", this.getModule(0).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
+            kCANUtil.registerDevice("Swerve_FrontLeftEncoder",     this.getModule(0).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder);
+            // Front Right
+            kCANUtil.registerDevice("Swerve_FrontRightDriveMotor", this.getModule(1).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
+            kCANUtil.registerDevice("Swerve_FrontRightSteerMotor", this.getModule(1).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
+            kCANUtil.registerDevice("Swerve_FrontRightEncoder",     this.getModule(1).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder);
+            // Back Left
+            kCANUtil.registerDevice("Swerve_BackLeftDriveMotor", this.getModule(2).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
+            kCANUtil.registerDevice("Swerve_BackLeftSteerMotor", this.getModule(2).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
+            kCANUtil.registerDevice("Swerve_BackLeftEncoder",     this.getModule(2).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder);
+            // Back Right
+            kCANUtil.registerDevice("Swerve_BackRightDriveMotor", this.getModule(3).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
+            kCANUtil.registerDevice("Swerve_BackRightSteerMotor", this.getModule(3).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
+            kCANUtil.registerDevice("Swerve_BackRightEncoder",     this.getModule(3).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder);
+            kCANUtil.registerDevice("Swerve_Pigeon", this.getPigeon2().getDeviceID(),     Constants.Hardware.DeviceType.Pigeon);
+        } catch (Exception ex) {
+            DriverStation.reportError("Failed to register swerve devices to CANUtil", ex.getStackTrace());
+        }
+    }
+
     private void configureAutoBuilder() {
         try {
-            configureElasticModuleStates();
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
                 () -> getState().Pose,   // Supplier of current robot pose

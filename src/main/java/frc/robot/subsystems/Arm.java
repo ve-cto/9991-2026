@@ -11,6 +11,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import frc.robot.Constants;
+import frc.robot.subsystems.util.CANUtil;
 
 public class Arm extends SubsystemBase {
     private final WPI_VictorSPX m_arm;
@@ -19,10 +20,11 @@ public class Arm extends SubsystemBase {
     private double armPositionDebounced = 0;
     private PIDController armPIDController = new PIDController(0.01, 0.0, 0.0);
     private Queue<Double> armPositionHistory = new ArrayBlockingQueue<>(3);
-    
+    private final CANUtil kCANUtil = CANUtil.getInstance();
     /** Instantiate */
     public Arm() {
         m_arm = new WPI_VictorSPX(Constants.Hardware.kArmId);
+        kCANUtil.registerDevice("m_arm", Constants.Hardware.kArmId, Constants.Hardware.DeviceType.VictorSPX);
     }
 
     public void periodic() {

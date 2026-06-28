@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.shooter;
 
+import frc.robot.subsystems.util.CANUtil;
+
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -39,7 +41,6 @@ import java.util.function.DoubleSupplier;
 public class Shooter extends SubsystemBase {
   private final TalonFX m_shooterL;
   private final TalonFX m_shooterR;
-
   // private final TalonFXSimState s_shooterL;
   // private final TalonFXSimState s_shooterR;
 
@@ -65,11 +66,13 @@ public class Shooter extends SubsystemBase {
 
   Alert alertSetBeyondMaximumSpeed = new Alert("Shooter setpoint is above maximum attainable speed, reducing.", AlertType.kWarning);
 
+  private final CANUtil kCANUtil = CANUtil.getInstance();
 
-  /** Creates a new Shooter. */
   public Shooter() {
     m_shooterL = new TalonFX(Constants.Hardware.kShooterLId);
     m_shooterR = new TalonFX(Constants.Hardware.kShooterRId);
+    kCANUtil.registerDevice("m_shooterL", Constants.Hardware.kShooterLId, Constants.Hardware.DeviceType.TalonFX);
+    kCANUtil.registerDevice("m_shooterR", Constants.Hardware.kShooterRId, Constants.Hardware.DeviceType.TalonFX);
     // kPidController = new PIDController(0.001, 0.01, 0.0);
     // kPidController = new PIDController(0.0001, 0.0008, 0.0);
     kPidController = new PIDController(0, 0, 0);

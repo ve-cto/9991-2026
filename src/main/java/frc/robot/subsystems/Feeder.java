@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.util.CANUtil;
 
 public class Feeder extends SubsystemBase {
   // private final TalonFX m_feederFX;
@@ -27,9 +28,13 @@ public class Feeder extends SubsystemBase {
   // private double closedLoopCalculatedOutput;
   
   // private final PIDController kPidController;
+
+  private final CANUtil kCANUtil = CANUtil.getInstance();
+
   /** Creates a new Feeder. */
   public Feeder() {
     m_feederSPX = new WPI_VictorSPX(Constants.Hardware.kFeederSPXId);
+    kCANUtil.registerDevice("m_feeder", Constants.Hardware.kFeederSPXId, Constants.Hardware.DeviceType.VictorSPX);
     // m_feederFX = new TalonFX(Constants.Hardware.kFeederFXId);
     // kPidController = new PIDController(0.0001, 0.0008, 0.0);
   }

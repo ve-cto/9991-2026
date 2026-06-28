@@ -11,13 +11,16 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import frc.robot.Constants;
+import frc.robot.subsystems.util.CANUtil;
 
 public class Intake extends SubsystemBase {
     private final WPI_VictorSPX m_intake;
+    private final CANUtil kCANUtil = CANUtil.getInstance();
 
     /** Instantiate */
     public Intake() {
         m_intake = new WPI_VictorSPX(Constants.Hardware.kIntakeId);
+        kCANUtil.registerDevice("m_intake", Constants.Hardware.kIntakeId, Constants.Hardware.DeviceType.VictorSPX);
     }
 
     public void periodic() {}

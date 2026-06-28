@@ -31,6 +31,13 @@ public final class Constants {
         public static final int kLedLength = 101;
 
         public static final double kMaxKrakenFreeSpeed = 6000;
+
+        public static enum DeviceType {
+            TalonFX,
+            VictorSPX,
+            CANcoder,
+            Pigeon
+        }
     }
 
     public static final class Intake {
