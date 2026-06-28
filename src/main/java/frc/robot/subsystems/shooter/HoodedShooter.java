@@ -2,33 +2,26 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Volts;
 
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.util.CANUtil;
@@ -63,7 +56,7 @@ public class HoodedShooter extends SubsystemBase {
     private final CANUtil kCANUtil = CANUtil.getInstance();
 
     public HoodedShooter() {
-        kCANUtil.registerDevice("m_hood", Constants.Hardware.kHoodId, Constants.Hardware.DeviceType.TalonFX);
+        kCANUtil.registerDevice("m_hood", Constants.Hardware.kHoodId, Constants.Hardware.DeviceType.TalonFX, m_hood);
     
         SmartDashboard.putNumber("HOODkp", Constants.Hood.kdefaultKp);
         SmartDashboard.putNumber("HOODki", Constants.Hood.kdefaultKi);

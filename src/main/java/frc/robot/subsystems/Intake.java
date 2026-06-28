@@ -1,13 +1,8 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import frc.robot.Constants;
@@ -20,7 +15,7 @@ public class Intake extends SubsystemBase {
     /** Instantiate */
     public Intake() {
         m_intake = new WPI_VictorSPX(Constants.Hardware.kIntakeId);
-        kCANUtil.registerDevice("m_intake", Constants.Hardware.kIntakeId, Constants.Hardware.DeviceType.VictorSPX);
+        kCANUtil.registerDevice("m_intake", Constants.Hardware.kIntakeId, Constants.Hardware.DeviceType.VictorSPX, m_intake);
     }
 
     public void periodic() {}

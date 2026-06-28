@@ -20,14 +20,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 import static edu.wpi.first.units.Units.*;
 
-import java.util.List;
-import java.util.Map;
 
 // Command Setup and Controllers
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,8 +34,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 // Commands
 // import frc.robot.commands.drive.DriveToApriltag;
 // import frc.robot.commands.drive.DriveToPose;
@@ -51,12 +50,10 @@ import frc.robot.subsystems.Led;
 import frc.robot.subsystems.NetworkTablesIO;
 import frc.robot.subsystems.shooter.HoodedShooter;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.util.CANUtil;
 import frc.robot.subsystems.util.TrajectoryCalculator;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.DebugMotors;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Feeder;
 
@@ -127,6 +124,8 @@ public class RobotContainer {
         // Pathplanner autos get populated into it automatically
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
+
+        SmartDashboard.putBoolean("Clear CAN Alerts", false);
 
         // Warm up on-the-fly path generation
         CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());

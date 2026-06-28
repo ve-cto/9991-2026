@@ -16,10 +16,9 @@ import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringSubscriber;
-import edu.wpi.first.wpilibj.Alert;
+// import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Alert.AlertType;
+// import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -44,13 +43,13 @@ public class NetworkTablesIO extends SubsystemBase {
   private final BooleanSubscriber allianceSubscriber = fmsTable.getBooleanTopic("IsRedAlliance").subscribe(isRedAlliance);
 
   private final DecimalFormat oneDP = new DecimalFormat("#.#");
-  private final DecimalFormat twoDP = new DecimalFormat("#.##");
+  // private final DecimalFormat twoDP = new DecimalFormat("#.##");
 
   private final Rectangle2d blueAllianceZoneRect = new Rectangle2d(new Pose2d(new Translation2d(2, 4), new Rotation2d()), 4, 8);
   private final Rectangle2d redAllianceZoneRect = new Rectangle2d(new Pose2d(new Translation2d(14.5, 4), new Rotation2d()), 4, 8);
   private final Rectangle2d centerFieldZoneRect = new Rectangle2d(new Pose2d(new Translation2d(8.25, 4), new Rotation2d()), 8.5, 8);
 
-  private final Alert AlertDebugModeEnabled = new Alert("Debug Mode is enabled, some functions may be inoperable or inaccessible during this time until it is disabled. Ask the lead programmer or technician for assistance in using Debug Mode.", AlertType.kWarning);
+  // private final Alert AlertDebugModeEnabled = new Alert("Debug Mode is enabled, some functions may be inoperable or inaccessible during this time until it is disabled. Ask the lead programmer or technician for assistance in using Debug Mode.", AlertType.kWarning);
   private final SendableChooser<Boolean> debugChooser = new SendableChooser<>();
 
   /** Creates a new NetworkTablesIO. */

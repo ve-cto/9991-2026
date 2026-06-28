@@ -4,13 +4,8 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -34,7 +29,7 @@ public class Feeder extends SubsystemBase {
   /** Creates a new Feeder. */
   public Feeder() {
     m_feederSPX = new WPI_VictorSPX(Constants.Hardware.kFeederSPXId);
-    kCANUtil.registerDevice("m_feeder", Constants.Hardware.kFeederSPXId, Constants.Hardware.DeviceType.VictorSPX);
+    kCANUtil.registerDevice("m_feeder", Constants.Hardware.kFeederSPXId, Constants.Hardware.DeviceType.VictorSPX, m_feederSPX);
     // m_feederFX = new TalonFX(Constants.Hardware.kFeederFXId);
     // kPidController = new PIDController(0.0001, 0.0008, 0.0);
   }

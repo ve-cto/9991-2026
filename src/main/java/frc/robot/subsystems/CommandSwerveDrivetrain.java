@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -18,7 +17,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -33,7 +31,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -42,7 +39,6 @@ import frc.robot.subsystems.util.CANUtil;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.Constants;
-import frc.robot.commands.drive.PointToHub;
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
@@ -258,22 +254,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private void registerDevices() {
         try {
-            kCANUtil.registerDevice("Swerve_FrontLeftDriveMotor", this.getModule(0).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
-            kCANUtil.registerDevice("Swerve_FrontLeftSteerMotor", this.getModule(0).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
-            kCANUtil.registerDevice("Swerve_FrontLeftEncoder",     this.getModule(0).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder);
+            kCANUtil.registerDevice("Swerve_FrontLeftDriveMotor",  this.getModule(0).getDriveMotor().getDeviceID(),  Constants.Hardware.DeviceType.TalonFX, this.getModule(0).getDriveMotor());
+            kCANUtil.registerDevice("Swerve_FrontLeftSteerMotor",  this.getModule(0).getSteerMotor().getDeviceID(),  Constants.Hardware.DeviceType.TalonFX, this.getModule(0).getSteerMotor());
+            kCANUtil.registerDevice("Swerve_FrontLeftEncoder",      this.getModule(0).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder, this.getModule(0).getEncoder());
+
             // Front Right
-            kCANUtil.registerDevice("Swerve_FrontRightDriveMotor", this.getModule(1).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
-            kCANUtil.registerDevice("Swerve_FrontRightSteerMotor", this.getModule(1).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
-            kCANUtil.registerDevice("Swerve_FrontRightEncoder",     this.getModule(1).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder);
+            kCANUtil.registerDevice("Swerve_FrontRightDriveMotor", this.getModule(1).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX, this.getModule(1).getDriveMotor());
+            kCANUtil.registerDevice("Swerve_FrontRightSteerMotor", this.getModule(1).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX, this.getModule(1).getSteerMotor());
+            kCANUtil.registerDevice("Swerve_FrontRightEncoder",     this.getModule(1).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder, this.getModule(1).getEncoder());
+
             // Back Left
-            kCANUtil.registerDevice("Swerve_BackLeftDriveMotor", this.getModule(2).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
-            kCANUtil.registerDevice("Swerve_BackLeftSteerMotor", this.getModule(2).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
-            kCANUtil.registerDevice("Swerve_BackLeftEncoder",     this.getModule(2).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder);
+            kCANUtil.registerDevice("Swerve_BackLeftDriveMotor",  this.getModule(2).getDriveMotor().getDeviceID(),  Constants.Hardware.DeviceType.TalonFX, this.getModule(2).getDriveMotor());
+            kCANUtil.registerDevice("Swerve_BackLeftSteerMotor",  this.getModule(2).getSteerMotor().getDeviceID(),  Constants.Hardware.DeviceType.TalonFX, this.getModule(2).getSteerMotor());
+            kCANUtil.registerDevice("Swerve_BackLeftEncoder",      this.getModule(2).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder, this.getModule(2).getEncoder());
+
             // Back Right
-            kCANUtil.registerDevice("Swerve_BackRightDriveMotor", this.getModule(3).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
-            kCANUtil.registerDevice("Swerve_BackRightSteerMotor", this.getModule(3).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX);
-            kCANUtil.registerDevice("Swerve_BackRightEncoder",     this.getModule(3).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder);
-            kCANUtil.registerDevice("Swerve_Pigeon", this.getPigeon2().getDeviceID(),     Constants.Hardware.DeviceType.Pigeon);
+            kCANUtil.registerDevice("Swerve_BackRightDriveMotor", this.getModule(3).getDriveMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX, this.getModule(3).getDriveMotor());
+            kCANUtil.registerDevice("Swerve_BackRightSteerMotor", this.getModule(3).getSteerMotor().getDeviceID(), Constants.Hardware.DeviceType.TalonFX, this.getModule(3).getSteerMotor());
+            kCANUtil.registerDevice("Swerve_BackRightEncoder",     this.getModule(3).getEncoder().getDeviceID(),     Constants.Hardware.DeviceType.CANcoder, this.getModule(3).getEncoder());
+
+            kCANUtil.registerDevice("Swerve_Pigeon", this.getPigeon2().getDeviceID(), Constants.Hardware.DeviceType.Pigeon, this.getPigeon2());
+
         } catch (Exception ex) {
             DriverStation.reportError("Failed to register swerve devices to CANUtil", ex.getStackTrace());
         }
@@ -420,10 +421,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     }
 
-    private final PIDController poseForwardPidController = new PIDController(1, 0, 0);
-    private final PIDController poseStrafePidController = new PIDController(1, 0, 0);
-    private final PIDController poseRotationPidController = new PIDController(0.1, 0, 0);
-    private final PIDController pointRotationPidController = new PIDController(1.5, 0, 0);
+    // private final PIDController poseForwardPidController = new PIDController(1, 0, 0);
+    // private final PIDController poseStrafePidController = new PIDController(1, 0, 0);
+    // private final PIDController poseRotationPidController = new PIDController(0.1, 0, 0);
+    // private final PIDController pointRotationPidController = new PIDController(1.5, 0, 0);
 
     /*
      * Drives in a straight trajectory from the current pose to a target pose.
@@ -523,9 +524,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         );
     }
 
-    private final Pose2d blueHubPose = new Pose2d(4.65, 4, new Rotation2d());
-    private final Pose2d redHubPose = new Pose2d(12, 4, new Rotation2d());
-    private Pose2d m_hubPose = new Pose2d();
+    // private final Pose2d blueHubPose = new Pose2d(4.65, 4, new Rotation2d());
+    // private final Pose2d redHubPose = new Pose2d(12, 4, new Rotation2d());
+    // private Pose2d m_hubPose = new Pose2d();
 
     public void pointToAngle(Rotation2d angleDegrees, double velX, double velY) {
         this.setControl(
@@ -539,13 +540,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     //     this.pointToPose(this.m_hubPose, velX.getAsDouble(), velY.getAsDouble(), networkTablesIO);
     // }
 
-    public void setHub(boolean isRedAlliance) {
-        try {
-            this.m_hubPose = isRedAlliance ? this.redHubPose : this.blueHubPose;
-        } catch (NullPointerException e) {
-            this.m_hubPose = this.redHubPose;
-        }
-    }
+    // public void setHub(boolean isRedAlliance) {
+    //     try {
+    //         this.m_hubPose = isRedAlliance ? this.redHubPose : this.blueHubPose;
+    //     } catch (NullPointerException e) {
+    //         this.m_hubPose = this.redHubPose;
+    //     }
+    // }
 
     public double getPointOffset() {
         double x = this.angleError;
@@ -553,7 +554,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public boolean getAligned() {
-        double x = getPointOffset();
+        // double x = getPointOffset();
         // System.out.println(x);
         boolean a = Math.abs(getPointOffset()) <= 0.35;
         return a;

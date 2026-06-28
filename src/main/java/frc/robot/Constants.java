@@ -75,18 +75,24 @@ public final class Constants {
     public static class Led {
         // list of all things the leds could display
         public static enum StatusList {
+            // robot state
             DISCONNECT,
             DISABLED,
             ESTOPPED,
             BLANK,
             TELEOP,           
             AUTONOMOUS,
+
+            // robot aligned but shooter is not spun up
             ALIGNED,
-            READY,
-            SHOOTING,
+            // everything is ready to shoot but robot is not feeding
+            // READY,
             NOTREADY,
-            REVERSE,
+            // robot is shooting
+            SHOOTING,
+            // progress map for shooter
             SPINUP,
+            // progress map for hood position
             HOOD
         }
     }

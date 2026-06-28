@@ -10,7 +10,6 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -18,13 +17,10 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,7 +31,6 @@ import frc.robot.Constants;
 
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
@@ -71,8 +66,8 @@ public class Shooter extends SubsystemBase {
   public Shooter() {
     m_shooterL = new TalonFX(Constants.Hardware.kShooterLId);
     m_shooterR = new TalonFX(Constants.Hardware.kShooterRId);
-    kCANUtil.registerDevice("m_shooterL", Constants.Hardware.kShooterLId, Constants.Hardware.DeviceType.TalonFX);
-    kCANUtil.registerDevice("m_shooterR", Constants.Hardware.kShooterRId, Constants.Hardware.DeviceType.TalonFX);
+    kCANUtil.registerDevice("m_shooterL", Constants.Hardware.kShooterLId, Constants.Hardware.DeviceType.TalonFX, m_shooterL);
+    kCANUtil.registerDevice("m_shooterR", Constants.Hardware.kShooterRId, Constants.Hardware.DeviceType.TalonFX, m_shooterR);
     // kPidController = new PIDController(0.001, 0.01, 0.0);
     // kPidController = new PIDController(0.0001, 0.0008, 0.0);
     kPidController = new PIDController(0, 0, 0);

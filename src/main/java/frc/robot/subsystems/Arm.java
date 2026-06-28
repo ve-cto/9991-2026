@@ -24,7 +24,7 @@ public class Arm extends SubsystemBase {
     /** Instantiate */
     public Arm() {
         m_arm = new WPI_VictorSPX(Constants.Hardware.kArmId);
-        kCANUtil.registerDevice("m_arm", Constants.Hardware.kArmId, Constants.Hardware.DeviceType.VictorSPX);
+        kCANUtil.registerDevice("m_arm", Constants.Hardware.kArmId, Constants.Hardware.DeviceType.VictorSPX, m_arm);
     }
 
     public void periodic() {
