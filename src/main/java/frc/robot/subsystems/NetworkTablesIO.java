@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import java.text.DecimalFormat;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rectangle2d;
@@ -48,7 +49,9 @@ public class NetworkTablesIO extends SubsystemBase {
   private final Rectangle2d blueAllianceZoneRect = new Rectangle2d(new Pose2d(new Translation2d(2, 4), new Rotation2d()), 4, 8);
   private final Rectangle2d redAllianceZoneRect = new Rectangle2d(new Pose2d(new Translation2d(14.5, 4), new Rotation2d()), 4, 8);
   private final Rectangle2d centerFieldZoneRect = new Rectangle2d(new Pose2d(new Translation2d(8.25, 4), new Rotation2d()), 8.5, 8);
-  private final Alert alertAutoRunning = new Alert("", AlertType.kInfo);
+
+  private final Alert AlertDebugModeEnabled = new Alert("Debug Mode is enabled, some functions may be inoperable or inaccessible during this time until it is disabled. Ask the lead programmer or technician for assistance in using Debug Mode.", AlertType.kWarning);
+  private final SendableChooser<Boolean> debugChooser = new SendableChooser<>();
 
   /** Creates a new NetworkTablesIO. */
   public NetworkTablesIO() {}
@@ -97,14 +100,16 @@ public class NetworkTablesIO extends SubsystemBase {
     SmartDashboard.putBoolean("isInCenterField", this.isInCenterField);
   }
 
-  public void publishAutoAlert(boolean isRunning, String name) {
-    if (!isRunning) {
-      alertAutoRunning.set(false);
-      return;
-    }
-    
-    alertAutoRunning.setText(String.format("CURRENTLY RUNNING AUTONOMOUS: %s", name));
-    alertAutoRunning.set(true);
+  public boolean getTestModeEnabled() {
+    return DriverStation.isTestEnabled();
+  }
+
+  public boolean getDebugModeEnabledv() {
+    return (debugChooser.getSelected() && getTestModeEnabled());
+  }
+
+  public BooleanSupplier getDebugModeEnabled() {
+    return () -> getDebugModeEnabledv();
   }
 
   public Pose2d getNetworkPose() {

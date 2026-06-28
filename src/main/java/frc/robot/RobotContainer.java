@@ -20,9 +20,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import static edu.wpi.first.units.Units.*;
+
+import java.util.List;
+import java.util.Map;
 
 // Command Setup and Controllers
 import edu.wpi.first.wpilibj2.command.Command;
@@ -122,7 +127,7 @@ public class RobotContainer {
         // Pathplanner autos get populated into it automatically
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
-        
+
         // Warm up on-the-fly path generation
         CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
 
@@ -180,8 +185,7 @@ public class RobotContainer {
 
         // When we enable test mode, update the subsystem PID configs (kp ki kd)
         RobotModeTriggers.test().whileTrue(m_shooter.updateMotorConfigsCommand().alongWith(m_hood.updateMotorConfigsCommand()));
-        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop().or(RobotModeTriggers.test())).whileTrue(m_trajectoryCalculator.updateAllianceCommand().alongWith(Commands.runOnce(() -> m_networkTablesIO.publishAutoAlert(false, autoChooser.getSelected().toString()), m_networkTablesIO).asProxy()));
-        RobotModeTriggers.autonomous().onTrue(Commands.runOnce(() -> m_networkTablesIO.publishAutoAlert(true, autoChooser.getSelected().toString()), m_networkTablesIO).asProxy());
+        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop().or(RobotModeTriggers.test())).whileTrue(m_trajectoryCalculator.updateAllianceCommand());
 
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
@@ -204,12 +208,15 @@ public class RobotContainer {
             m_shooter.coastCommand()
             // m_shooter.brakeCommand()
         );
+        m_hood.setDefaultCommand(
+            m_hood.brakeCommand()
+        );
+        
         // Default to displaying the specific modes' pattern (disconn, disabl, auto, teleop)
         m_led.setDefaultCommand(
             m_led.handleDefault().ignoringDisable(true)
         );
-        m_hood.setDefaultCommand(m_hood.brakeCommand());
-        
+
         // ---------------------------------------
 
         driveJoystick.leftBumper().whileTrue(
