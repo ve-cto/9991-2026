@@ -27,6 +27,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.BooleanSupplier;
 
 // Command Setup and Controllers
 import edu.wpi.first.wpilibj2.command.Command;
@@ -96,12 +97,10 @@ public class RobotContainer {
     // private final CommandPS4Controller driveJoystick = new CommandXboxController(Constants.Controller.kDriverControllerPort);
     // private final CommandPS4Controller operatorJoystick = new CommandXboxController(Constants.Controller.kOperatorControllerPort);
     private final CommandXboxController driveJoystick = new CommandXboxController(Constants.Controller.kDriverControllerPort);
-    private final CommandPS4Controller operatorJoystick = new CommandPS4Controller(Constants.Controller.kOperatorControllerPort);
+    private final CommandXboxController operatorJoystick = new CommandXboxController(Constants.Controller.kOperatorControllerPort);
     // #endregion Controllers
 
-    // #region Misc
     private final SendableChooser<Command> autoChooser;
-    // #endregion Misc
     
     // private final Alert alertJoystickUnplugged = new Alert("", AlertType.kWarning);
     private final Alert alertEstopped = new Alert("Robot has been EStopped and requires a restart or redeploy to resume operation.", AlertType.kError);
@@ -124,8 +123,6 @@ public class RobotContainer {
         // Pathplanner autos get populated into it automatically
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
-
-        SmartDashboard.putBoolean("Clear CAN Alerts", false);
 
         // Warm up on-the-fly path generation
         CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());

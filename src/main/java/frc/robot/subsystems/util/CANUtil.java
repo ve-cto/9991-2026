@@ -38,15 +38,18 @@ public class CANUtil extends SubsystemBase {
     Object device,
     Alert alert,
     Alert alert2,
-    Alert alert3
+    Alert alert3,
+    Alert alert4
   ) {}
 
   private static final List<CANDeviceEntry> devices = Collections.synchronizedList(new ArrayList<>());
 
   // alert for when >=1 devices are disconencted (does not go to CANAlerts_ list, goes to main alert list)
   private Alert anyDisconnectAlert = new Alert("", AlertType.kError);
+  private boolean pigeonChecked = false;
 
   public CANUtil() {
+    SmartDashboard.putBoolean("Clear CAN Alerts", false);
     refreshTimer.reset();
     refreshTimer.start();
   }
@@ -63,17 +66,13 @@ public class CANUtil extends SubsystemBase {
     anyDisconnectAlert.set(false);
   }
 
-  @Override
   public void periodic() {
     if (SmartDashboard.getBoolean("Clear CAN Alerts", false)) {
       clearAlerts();
       SmartDashboard.putBoolean("Clear CAN Alerts", false);
     }
 
-
-
     if (refreshTimer.hasElapsed(1)) {
-
       boolean anyDisconnect = false;
       int disconnectCount = 0;
 
@@ -82,7 +81,9 @@ public class CANUtil extends SubsystemBase {
           checkAlive(entry);
           checkCANcoderMagnetFault(entry);
           checkUnstableSupplyVoltageFault(entry);
-          checkPigeonStartupFault(entry);
+          if (!pigeonChecked) {
+            checkPigeonStartupFault(entry);
+          }
           if (entry.alert.get()) { // if disconnected
             disconnectCount += 1;
             anyDisconnect = true;
@@ -150,19 +151,19 @@ public class CANUtil extends SubsystemBase {
 
   public void registerDevice(String deviceName, int deviceId, Constants.Hardware.DeviceType deviceType, Object device) {
     if (deviceType == Constants.Hardware.DeviceType.TalonFX) {
-      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning));
+      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning), new Alert("CANAlerts_","", AlertType.kWarning));
       devices.add(entry);
     } else if (deviceType == Constants.Hardware.DeviceType.VictorSPX) {
-      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning));
+      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning), new Alert("CANAlerts_","", AlertType.kWarning));
       devices.add(entry);
     } else if (deviceType == Constants.Hardware.DeviceType.CANcoder) {
-      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","Incorrect magnet positioning", AlertType.kWarning));
+      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning), new Alert("CANAlerts_","incorrect magnet positioning", AlertType.kWarning));
       devices.add(entry);
     } else if (deviceType == Constants.Hardware.DeviceType.Pigeon) {
-      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","", AlertType.kWarning));
+      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning), new Alert("CANAlerts_","problem during startup", AlertType.kWarning));
       devices.add(entry);
     }
-    System.out.println(String.format("Device %s with ID %s of type %s has been successfully registered to CANUtil", deviceName, deviceId, deviceType));
+    // System.out.println(String.format("Device %s with ID %s of type %s has been successfully registered to CANUtil", deviceName, deviceId, deviceType));
   }
 
   // public void checkFeatureUnlicensedFault(CANDeviceEntry entry) {
@@ -209,8 +210,8 @@ public class CANUtil extends SubsystemBase {
     if (entry.type == Constants.Hardware.DeviceType.CANcoder) {
       CANcoder cc = (CANcoder) entry.device();
       if (cc.getFault_BadMagnet().getValue()) {
-        entry.alert3.setText(String.format("CANcoder '%s' (ID %s) has detected improper magnet positioning most recently at timestamp: %s", entry.name, entry.canId, Timer.getFPGATimestamp()));
-        entry.alert3.set(true);
+        entry.alert4.setText(String.format("CANcoder '%s' (ID %s) has detected improper magnet positioning most recently at timestamp: %s", entry.name, entry.canId, Timer.getFPGATimestamp()));
+        entry.alert4.set(true);
         return;
       }
     }
@@ -218,11 +219,17 @@ public class CANUtil extends SubsystemBase {
   }
 
   public void checkPigeonStartupFault(CANDeviceEntry entry) {
-    if (entry.type == Constants.Hardware.DeviceType.Pigeon) {
-      Pigeon2 pig = (Pigeon2) entry.device();
-      if (pig.getStickyFault_BootIntoMotion().getValue() || pig.getStickyFault_BootupAccelerometer().getValue() || pig.getStickyFault_BootupGyroscope().getValue() || pig.getStickyFault_BootupMagnetometer().getValue()) {
-        entry.alert3.setText(String.format("Pigeon '%s' (ID %s) has reported one or more issues during startup. Timestamp: %s", entry.name, entry.canId, Timer.getFPGATimestamp()));
+    if (!pigeonChecked) {
+      if (entry.type == Constants.Hardware.DeviceType.Pigeon) {
+        Pigeon2 pig = (Pigeon2) entry.device();
+        if (pig.getStickyFault_BootIntoMotion().getValue() || pig.getStickyFault_BootupAccelerometer().getValue() || pig.getStickyFault_BootupGyroscope().getValue() || pig.getStickyFault_BootupMagnetometer().getValue()) {
+          entry.alert4.setText(String.format("Pigeon '%s' (ID %s) has reported one or more issues during startup. Timestamp: %s", entry.name, entry.canId, Timer.getFPGATimestamp()));
+          entry.alert4.set(true);
+          pig.clearStickyFaults();
+        }
+        pigeonChecked = true;
       }
+      return;
     }
   }
 }
