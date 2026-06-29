@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.ctre.phoenix.motorcontrol.Faults;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -30,6 +31,7 @@ public class CANUtil extends SubsystemBase {
   }
 
   private Timer refreshTimer = new Timer();
+  private Faults spxfaults = new Faults();
 
   public record CANDeviceEntry(
     String name,
@@ -55,12 +57,13 @@ public class CANUtil extends SubsystemBase {
   }
 
   public void clearAlerts() {
-    System.out.println("press");
+    // System.out.println("press");
     synchronized (devices) {
       for (CANDeviceEntry entry : devices) {
         entry.alert.set(false);
         entry.alert2.set(false);
         entry.alert3.set(false);
+        entry.alert4.set(false);
       }
     }
     anyDisconnectAlert.set(false);
@@ -110,8 +113,9 @@ public class CANUtil extends SubsystemBase {
       }
       return;
     } else if (entry.type == Constants.Hardware.DeviceType.VictorSPX) {
-      VictorSPX spx = (VictorSPX) entry.device();
-      if (spx.getBusVoltage() == 0 || Double.isNaN(spx.getBusVoltage())) {
+      WPI_VictorSPX spx = (WPI_VictorSPX) entry.device();
+      spx.getFaults(spxfaults);
+      if (spx.getBusVoltage() == 0 || Double.isNaN(spx.getBusVoltage()) || spxfaults.APIError) {
         updateDisconnectAlert(entry, true);
       } else {
         updateDisconnectAlert(entry, false);
@@ -160,7 +164,7 @@ public class CANUtil extends SubsystemBase {
       CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning), new Alert("CANAlerts_","incorrect magnet positioning", AlertType.kWarning));
       devices.add(entry);
     } else if (deviceType == Constants.Hardware.DeviceType.Pigeon) {
-      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning), new Alert("CANAlerts_","problem during startup", AlertType.kWarning));
+      CANDeviceEntry entry = new CANDeviceEntry(deviceName, deviceId, deviceType, device, new Alert("CANAlerts_","Connected?", AlertType.kError), new Alert("CANAlerts_","Last time connected", AlertType.kWarning), new Alert("CANAlerts_","undervoltage", AlertType.kWarning), new Alert("CANAlerts_","problem during startup", AlertType.kInfo));
       devices.add(entry);
     }
     // System.out.println(String.format("Device %s with ID %s of type %s has been successfully registered to CANUtil", deviceName, deviceId, deviceType));
@@ -182,7 +186,7 @@ public class CANUtil extends SubsystemBase {
       } 
       return;
     } else if (entry.type == Constants.Hardware.DeviceType.VictorSPX) {
-      VictorSPX spx = (VictorSPX) entry.device();
+      WPI_VictorSPX spx = (WPI_VictorSPX) entry.device();
       Faults f = new Faults();
       spx.getFaults(f);
       if (f.SupplyUnstable || f.SupplyOverV || f.UnderVoltage) {
@@ -223,7 +227,7 @@ public class CANUtil extends SubsystemBase {
       if (entry.type == Constants.Hardware.DeviceType.Pigeon) {
         Pigeon2 pig = (Pigeon2) entry.device();
         if (pig.getStickyFault_BootIntoMotion().getValue() || pig.getStickyFault_BootupAccelerometer().getValue() || pig.getStickyFault_BootupGyroscope().getValue() || pig.getStickyFault_BootupMagnetometer().getValue()) {
-          entry.alert4.setText(String.format("Pigeon '%s' (ID %s) has reported one or more issues during startup. Timestamp: %s", entry.name, entry.canId, Timer.getFPGATimestamp()));
+          entry.alert4.setText(String.format("Pigeon '%s' (ID %s) has reported one or more issues during startup. These issues do not influence functionality of the Pigeon, but ensure that the robot is not in motion during startup in future. Timestamp: %s", entry.name, entry.canId, Timer.getFPGATimestamp()));
           entry.alert4.set(true);
           pig.clearStickyFaults();
         }
